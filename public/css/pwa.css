@@ -1,0 +1,311 @@
+/* ══════════════════════════════════════════
+   UPSC COMMAND CENTER — PWA STYLES
+   Splash screen, install banners, toasts,
+   safe area insets, app-shell polish
+   ══════════════════════════════════════════ */
+
+/* ── SAFE AREA INSETS (iPhone notch / Dynamic Island) ── */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
+
+/* When running as installed PWA */
+@media (display-mode: standalone) {
+  .header {
+    padding-top: var(--sat);
+    padding-left: calc(1.5rem + var(--sal));
+    padding-right: calc(1rem + var(--sar));
+  }
+  .bottom-nav {
+    padding-bottom: var(--sab);
+    height: calc(var(--bnav-h) + var(--sab));
+  }
+  .main {
+    padding-bottom: calc(var(--bnav-h) + var(--sab));
+  }
+  /* Hide browser chrome hint */
+  body::after {
+    display: none;
+  }
+}
+
+/* ── SPLASH SCREEN ── */
+.splash-screen {
+  position: fixed; inset: 0;
+  background: #0d0d0d;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 10000;
+  transition: opacity 0.5s ease;
+}
+.splash-screen.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+.splash-content {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 1rem; padding: 2rem; text-align: center;
+  animation: splashIn 0.6s cubic-bezier(0.2, 0.8, 0.4, 1) both;
+}
+@keyframes splashIn {
+  from { opacity: 0; transform: scale(0.88) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.splash-emblem {
+  border: 2px solid #e8760a;
+  animation: splashPulse 2s ease-in-out infinite;
+}
+@keyframes splashPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232,118,10,0.4); }
+  50% { box-shadow: 0 0 0 12px rgba(232,118,10,0); }
+}
+.splash-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.75rem; letter-spacing: 0.2em;
+  color: #f5f0e8; line-height: 1;
+}
+.splash-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.55rem; letter-spacing: 0.22em;
+  text-transform: uppercase; color: #a89070;
+}
+.splash-loader {
+  width: 200px; height: 2px;
+  background: #2a2a2a; overflow: hidden; margin-top: 0.5rem;
+}
+.splash-bar {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, #e8760a, #1a6b3c);
+  transition: width 0.3s ease;
+}
+.splash-status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.52rem; letter-spacing: 0.12em;
+  color: #555; text-transform: uppercase; margin-top: 0.25rem;
+}
+
+/* ── PWA BANNERS (shared base) ── */
+.pwa-banner {
+  position: fixed; bottom: calc(var(--bnav-h) + var(--sab) + 8px); left: 0.75rem; right: 0.75rem;
+  background: #0d0d0d; color: #f5f0e8;
+  border: 1px solid #2a2a2a; border-top: 2px solid #e8760a;
+  padding: 0.75rem 0.85rem;
+  display: flex; align-items: center; gap: 0.65rem;
+  z-index: 500;
+  transform: translateY(calc(100% + 20px));
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.4, 1);
+  max-width: 480px; margin: 0 auto;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+}
+.pwa-banner.show {
+  transform: translateY(0);
+}
+/* Desktop: position differently */
+@media (min-width: 681px) {
+  .pwa-banner {
+    bottom: 1rem; right: 1rem; left: auto;
+    width: 360px; margin: 0;
+  }
+}
+
+.pwa-banner-icon { font-size: 1.5rem; flex-shrink: 0; }
+.pwa-banner-text { flex: 1; min-width: 0; }
+.pwa-banner-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem; letter-spacing: 0.08em; font-weight: 600;
+  color: #f5f0e8; margin-bottom: 0.15rem;
+}
+.pwa-banner-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.52rem; letter-spacing: 0.06em; color: #a89070;
+}
+
+.pwa-install-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 0.45rem 0.85rem; cursor: pointer; flex-shrink: 0;
+  border: 1px solid #e8760a; background: #e8760a; color: #0d0d0d;
+  transition: all 0.15s; white-space: nowrap;
+  touch-action: manipulation;
+}
+.pwa-install-btn:hover, .pwa-install-btn:active { background: #f5f0e8; color: #0d0d0d; }
+
+.pwa-dismiss-btn {
+  background: none; border: none; color: #555;
+  font-size: 0.75rem; cursor: pointer; padding: 0.3rem 0.4rem;
+  flex-shrink: 0; transition: color 0.15s;
+  touch-action: manipulation;
+}
+.pwa-dismiss-btn:hover { color: #f5f0e8; }
+
+/* ── OFFLINE BANNER ── */
+.offline-banner {
+  border-top-color: #c0392b;
+  background: #1a0a08;
+}
+.offline-banner .pwa-banner-text strong { color: #e05a4e; }
+
+/* ── NOTIFICATION BANNER ── */
+.notif-banner {
+  border-top-color: #1a6b3c;
+}
+
+/* ── UPDATE BANNER ── */
+.update-banner {
+  border-top-color: #0f2352;
+}
+
+/* ── TOAST NOTIFICATIONS ── */
+#pwaToast {
+  position: fixed; top: calc(60px + var(--sat) + 8px);
+  left: 50%; transform: translateX(-50%) translateY(-80px);
+  background: #0d0d0d; color: #f5f0e8;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem; letter-spacing: 0.08em;
+  padding: 0.65rem 1.2rem;
+  border: 1px solid #2a2a2a;
+  white-space: nowrap; z-index: 600;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.4, 1);
+  max-width: calc(100vw - 2rem); text-overflow: ellipsis; overflow: hidden;
+}
+#pwaToast.show {
+  transform: translateX(-50%) translateY(0);
+}
+.pwa-toast-success { border-top: 2px solid #1a6b3c; }
+.pwa-toast-warning { border-top: 2px solid #e8760a; }
+.pwa-toast-info { border-top: 2px solid #0f2352; }
+
+/* ── MOBILE APP-LIKE POLISH ── */
+
+/* Remove focus rings on touch, keep for keyboard */
+@media (pointer: coarse) {
+  * { -webkit-tap-highlight-color: transparent; }
+  button:focus, a:focus { outline: none; }
+  .option:focus { outline: none; }
+}
+
+/* Smooth momentum scrolling */
+.scheme-table-wrap,
+.sidebar,
+.modal-body,
+.bottom-nav,
+.feed-filters,
+.filter-scroll,
+.scheme-filter-row {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Active states for touch */
+.news-card:active,
+.option:active,
+.essay-card:active,
+.rev-card:active,
+.syllabus-node:active {
+  opacity: 0.85;
+  transform: scale(0.98) !important;
+}
+
+.btn:active { opacity: 0.8; }
+.bnav-tab:active { opacity: 0.7; }
+.feed-filter:active { opacity: 0.8; }
+.btn-filter:active { opacity: 0.8; }
+
+/* Prevent text selection on interactive elements */
+.btn, .option, .bnav-tab, .feed-filter, .btn-filter,
+.news-card, .essay-card, .rev-card, .syllabus-node {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Allow text selection in content */
+.question-text, .answer-textarea, .exp-text,
+.mains-prompt-text, .news-headline, .rec-text {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* ── PULL TO REFRESH INDICATOR ── */
+.ptr-indicator {
+  position: fixed; top: calc(56px + var(--sat));
+  left: 50%; transform: translateX(-50%) translateY(-60px);
+  background: #0d0d0d; color: #f5f0e8;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem; padding: 0.4rem 1rem;
+  border: 1px solid #e8760a; z-index: 400;
+  transition: transform 0.3s ease;
+  display: none;
+}
+
+/* ── OFFLINE INDICATOR DOT ── */
+.header::after {
+  content: '';
+  position: absolute; top: 50%; right: 0.75rem;
+  transform: translateY(-50%);
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #1a6b3c;
+  transition: background 0.3s;
+}
+body.offline .header::after { background: #c0392b; }
+body.offline .header::before {
+  content: 'OFFLINE';
+  position: absolute; top: 50%; right: 1.5rem;
+  transform: translateY(-50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.42rem; letter-spacing: 0.15em;
+  color: #c0392b;
+}
+
+/* ── INSTALLED APP: Hide install banner references ── */
+@media (display-mode: standalone) {
+  #installBanner { display: none !important; }
+  .splash-screen { display: none !important; }
+}
+
+/* ── SWIPE HINT (first visit) ── */
+.swipe-hint {
+  position: fixed; bottom: calc(var(--bnav-h) + var(--sab) + 12px);
+  left: 50%; transform: translateX(-50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.48rem; letter-spacing: 0.12em; text-transform: uppercase;
+  color: #555; text-align: center;
+  animation: swipeFade 4s ease both;
+  pointer-events: none; z-index: 100;
+}
+@keyframes swipeFade {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ── KEYBOARD AVOIDANCE ── */
+@media (max-height: 500px) {
+  /* Landscape mobile: compact layout */
+  .header { min-height: 44px; }
+  .header-title { font-size: 1rem; }
+  .bottom-nav { display: none; }
+  .nav-tabs { display: flex; }
+}
+
+/* ── HIGH CONTRAST / ACCESSIBILITY ── */
+@media (prefers-contrast: high) {
+  :root {
+    --dust-light: #888;
+    --dust: #555;
+  }
+  .news-tag, .news-badge { border: 1px solid currentColor; }
+}
+
+/* ── REDUCE MOTION ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .splash-screen { display: none !important; }
+}
+
+/* ── DARK MODE (optional, system-level) ── */
+/* Intentionally not implemented — the parchment theme IS the brand */

@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>UPSC Command Center — Civil Services Prep</title>
+<meta name="description" content="Full-featured UPSC Civil Services preparation platform. MCQ engine, mains lab, revision system, current affairs, scheme tracker and analytics.">
+
+<!-- ══ PWA CORE ══ -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0d0d0d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="UPSC CC">
+
+<!-- ══ APPLE TOUCH ICONS ══ -->
+<link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png">
+<link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512.png">
+
+<!-- ══ FAVICON ══ -->
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛️</text></svg>">
+
+<!-- ══ SPLASH SCREENS (iOS) ══ -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+<!-- ══ OPEN GRAPH (share preview) ══ -->
+<meta property="og:title" content="UPSC Command Center">
+<meta property="og:description" content="40 MCQs · Mains Lab · AI Evaluation · Scheme Tracker · Works Offline">
+<meta property="og:type" content="website">
+<meta property="og:image" content="/icons/icon-512.png">
+
+<!-- ══ SECURITY ══ -->
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@300;400;600&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/pwa.css">
+</head>
+<body>
+
+<!-- ══════════ HEADER ══════════ -->
+<header class="header">
+  <div class="header-left">
+    <div class="logo-mark">IAS</div>
+    <div>
+      <div class="header-title">UPSC Command</div>
+      <div class="header-sub">Civil Services Platform</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="header-stat">
+      <div class="header-stat-val js-streak">214</div>
+      <div class="header-stat-lbl">Day Streak</div>
+    </div>
+    <div class="header-stat">
+      <div class="header-stat-val js-readiness">68%</div>
+      <div class="header-stat-lbl">Readiness</div>
+    </div>
+    <div class="header-stat header-stat-hide">
+      <div class="header-stat-val">89d</div>
+      <div class="header-stat-lbl">To Prelims</div>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════ TICKER ══════════ -->
+<div class="ticker">
+  <span class="ticker-inner">
+    &nbsp;&nbsp;★ India's semiconductor fab inaugurated in Dholera, Gujarat ·&nbsp; ★ Finance Commission releases interim report on fiscal federalism ·&nbsp; ★ India-ASEAN summit — Indo-Pacific Maritime Security Declaration adopted ·&nbsp; ★ SEBI introduces T+0 settlement for 500 securities ·&nbsp; ★ Supreme Court upholds Gondi tribal forest rights in Chhattisgarh ·&nbsp; ★ ISRO's NVS-01 NavIC satellite completes final orbital checks ·&nbsp; ★ Draft National Water Policy 2025 released for public comment ·&nbsp; ★ India's renewable energy capacity crosses 220 GW ·&nbsp; ★ PM Gati Shakti network reaches 100 lakh km milestone ·&nbsp;
+  </span>
+</div>
+
+<!-- ══════════ DESKTOP NAV ══════════ -->
+<nav class="nav-tabs">
+  <button class="nav-tab active" data-panel="home" onclick="App.switchPanel('home')">🏠 Home</button>
+  <button class="nav-tab" data-panel="feed" onclick="App.switchPanel('feed')">📰 Daily Feed</button>
+  <button class="nav-tab" data-panel="prelims" onclick="App.switchPanel('prelims')">❓ Prelims MCQ</button>
+  <button class="nav-tab" data-panel="mains" onclick="App.switchPanel('mains')">✍️ Mains Lab</button>
+  <button class="nav-tab" data-panel="notes" onclick="App.switchPanel('notes')">📖 Notes</button>
+  <button class="nav-tab" data-panel="syllabus" onclick="App.switchPanel('syllabus')">🗂️ Syllabus Map</button>
+  <button class="nav-tab" data-panel="revision" onclick="App.switchPanel('revision')">🔄 Revision</button>
+  <button class="nav-tab" data-panel="mistakes" onclick="App.switchPanel('mistakes')">🔍 Mistakes</button>
+  <button class="nav-tab" data-panel="schemes" onclick="App.switchPanel('schemes')">📋 Schemes</button>
+  <button class="nav-tab" data-panel="mentor" onclick="App.switchPanel('mentor')">🤖 AI Mentor</button>
+  <button class="nav-tab" data-panel="predict" onclick="App.switchPanel('predict')">🔮 Prediction</button>
+    <button class="nav-tab" data-panel="analytics" onclick="App.switchPanel('analytics')">📊 Analytics</button>
+</nav>
+
+<!-- ══════════ MAIN ══════════ -->
+<div class="main">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar" id="desktopSidebar">
+    <div class="sidebar-section">
+      <div class="section-label">Overall Progress</div>
+      <div class="progress-ring-wrap">
+        <svg class="ring-svg" width="52" height="52" viewBox="0 0 60 60">
+          <circle class="ring-bg" cx="30" cy="30" r="24"/>
+          <circle class="ring-fill" cx="30" cy="30" r="24" stroke="#e8760a" stroke-dasharray="150.8" stroke-dashoffset="48"/>
+        </svg>
+        <div><div class="ring-pct">68%</div><div class="ring-name">Prelims</div></div>
+      </div>
+      <div class="progress-ring-wrap">
+        <svg class="ring-svg" width="52" height="52" viewBox="0 0 60 60">
+          <circle class="ring-bg" cx="30" cy="30" r="24"/>
+          <circle class="ring-fill" cx="30" cy="30" r="24" stroke="#1a6b3c" stroke-dasharray="150.8" stroke-dashoffset="75"/>
+        </svg>
+        <div><div class="ring-pct">50%</div><div class="ring-name">Mains</div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-label">Subject Coverage</div>
+      <div class="subject-bar"><div class="bar-header"><span class="bar-name">Polity</span><span class="bar-pct">84%</span></div><div class="bar-track"><div class="bar-fill" style="width:84%;background:var(--navy)" data-subject="Polity"></div></div></div>
+      <div class="subject-bar"><div class="bar-header"><span class="bar-name">Economy</span><span class="bar-pct">61%</span></div><div class="bar-track"><div class="bar-fill" style="width:61%;background:var(--green-india)" data-subject="Economy"></div></div></div>
+      <div class="subject-bar"><div class="bar-header"><span class="bar-name">History</span><span class="bar-pct">78%</span></div><div class="bar-track"><div class="bar-fill" style="width:78%;background:var(--saffron)" data-subject="History"></div></div></div>
+      <div class="subject-bar"><div class="bar-header"><span class="bar-name">Environment</span><span class="bar-pct">42%</span></div><div class="bar-track"><div class="bar-fill" style="width:42%;background:var(--red)" data-subject="Environment"></div></div></div>
+      <div class="subject-bar"><div class="bar-header"><span class="bar-name">Sci & Tech</span><span class="bar-pct">55%</span></div><div class="bar-track"><div class="bar-fill" style="width:55%;background:#7a3bbf" data-subject="Sci & Tech"></div></div></div>
+      <div class="subject-bar"><div class="bar-header"><span class="bar-name">Geography</span><span class="bar-pct">70%</span></div><div class="bar-track"><div class="bar-fill" style="width:70%;background:#1a7a8c" data-subject="Geography"></div></div></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-label">Today's Targets</div>
+      <div class="target-item done"><span>25 MCQs</span><span class="target-val">12/25 ✓</span></div>
+      <div class="target-item pending"><span>1 Mains Answer</span><span class="target-val">0/1 —</span></div>
+      <div class="target-item pending"><span>Revise 3 Topics</span><span class="target-val">1/3 —</span></div>
+      <div class="target-item done"><span>Read Current Affairs</span><span class="target-val">Done ✓</span></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-label">March Streak</div>
+      <div class="streak-row" id="streakD"></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-label">Weakness Watchlist</div>
+      <div id="analyticsWeak"></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-label">AI Coach Insight</div>
+      <div class="insight-card">
+        <div class="insight-label">Pattern Detected</div>
+        <div class="insight-text">Environment accuracy dropped 18% this week. Recommend 2 focused sessions on biodiversity treaties before prelims.</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-label">Upcoming</div>
+      <div class="upcoming-item"><div class="upcoming-date">+7d</div><div class="upcoming-text">Mock Test 8 — Full Prelims (100 MCQ)</div></div>
+      <div class="upcoming-item"><div class="upcoming-date">+14d</div><div class="upcoming-text">Mains Marathon — GS II Economy</div></div>
+      <div class="upcoming-item"><div class="upcoming-date" style="color:var(--saffron)">+89d</div><div class="upcoming-text" style="color:var(--saffron);font-weight:600">UPSC Prelims 2026</div></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-label">Quick Reference</div>
+      <div style="display:flex;flex-direction:column;gap:0.35rem">
+        <button class="btn btn-secondary" style="font-size:0.58rem;text-align:left" onclick="App.switchPanel('syllabus')">🗂️ Syllabus Mapper</button>
+        <button class="btn btn-secondary" style="font-size:0.58rem;text-align:left" onclick="App.switchPanel('schemes')">📋 Scheme Tracker</button>
+        <button class="btn btn-secondary" style="font-size:0.58rem;text-align:left" onclick="App.switchPanel('revision')">🔄 Revision Due</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CENTER CONTENT -->
+  <main class="center">
+
+    <!-- Mobile stats strip -->
+    <div class="mob-stats">
+      <div class="mob-stat"><div class="mob-stat-val js-readiness">68%</div><div class="mob-stat-lbl">Readiness</div></div>
+      <div class="mob-stat"><div class="mob-stat-val js-streak">214</div><div class="mob-stat-lbl">Streak</div></div>
+      <div class="mob-stat"><div class="mob-stat-val">89d</div><div class="mob-stat-lbl">Prelims</div></div>
+      <div class="mob-stat"><div class="mob-stat-val" id="stat-acc-mob">75%</div><div class="mob-stat-lbl">MCQ Acc.</div></div>
+      <div class="mob-stat" style="background:var(--red-pale);border-color:var(--red)"><div class="mob-stat-val" style="color:var(--red)">38%</div><div class="mob-stat-lbl">Env ⚠</div></div>
+    </div>
+
+
+    <!-- ── PANEL: HOME DASHBOARD ── -->
+    <div id="panel-home" class="panel active">
+      <div class="mobile-panel-header">
+        <button class="menu-btn" onclick="App.openDrawer()"><span></span><span></span><span></span></button>
+        <div class="sh-title" style="font-size:1.15rem">Command Center</div>
+      </div>
+
+      <div class="home-hero">
+        <div class="home-greeting" id="homeGreeting">Good morning, Aspirant</div>
+        <div class="home-rank-row">
+          <div class="home-rank-icon" id="homeRankIcon">📚</div>
+          <div style="flex:1">
+            <div class="home-rank-title" id="homeRankTitle">Aspirant</div>
+            <div class="home-xp-bar-wrap"><div class="home-xp-bar" id="homeXPBar" style="width:0%"></div></div>
+            <div class="home-xp-label" id="homeXPLabel">0 XP — 100 XP to next rank</div>
+          </div>
+        </div>
+        <div class="home-stats-row">
+          <div class="home-stat-pill"><span class="home-stat-val js-streak">6</span><span class="home-stat-lbl">🔥 Streak</span></div>
+          <div class="home-stat-pill"><span class="home-stat-val js-readiness">68%</span><span class="home-stat-lbl">📊 Readiness</span></div>
+          <div class="home-stat-pill"><span class="home-stat-val" id="homeXPDisplay">0</span><span class="home-stat-lbl">⚡ XP</span></div>
+          <div class="home-stat-pill" style="background:var(--saffron-pale);border-color:var(--saffron)"><span class="home-stat-val" style="color:var(--saffron)">89</span><span class="home-stat-lbl">📅 Days Left</span></div>
+        </div>
+      </div>
+
+      <div class="home-section-title">
+        <span>Today's Missions</span>
+        <span id="missionProgress" style="font-family:var(--mono);font-size:0.58rem;color:var(--dust)">0/6 complete</span>
+      </div>
+      <div id="dailyMissions" class="missions-grid"></div>
+
+      <div class="home-section-title">
+        <span>Weekly Challenge</span>
+        <span style="font-family:var(--mono);font-size:0.58rem;color:var(--dust)">Resets Sunday</span>
+      </div>
+      <div id="weeklyChallenge" class="weekly-challenge-box"></div>
+
+      <div class="home-section-title"><span>AI Mentor — Today's Study Plan</span></div>
+      <div class="ai-briefing" id="aiBriefing">
+        <div class="ai-briefing-header">
+          <div class="ai-avatar">🤖</div>
+          <div>
+            <div class="ai-name">UPSC Mentor AI</div>
+            <div class="ai-tag">Personalised for your performance data</div>
+          </div>
+        </div>
+        <div id="aiDailyPlan" class="ai-plan"></div>
+      </div>
+
+      <div class="home-section-title"><span>This Week's Leaderboard</span></div>
+      <div id="leaderboard" class="leaderboard-list"></div>
+    </div>
+
+    <!-- ── PANEL: NOTES LIBRARY ── -->
+    <div id="panel-notes" class="panel">
+      <div class="mobile-panel-header">
+        <button class="menu-btn" onclick="App.openDrawer()"><span></span><span></span><span></span></button>
+        <div class="sh-title" style="font-size:1.15rem">Notes</div>
+      </div>
+      <div class="section-heading"><div class="sh-title">Topic Notes</div><div class="sh-sub">3-layer depth · Micro → Brief → Deep</div></div>
+
+      <div class="notes-filter-bar">
+        <button class="btn-filter notes-subj-filter active" data-subj="All" onclick="App.filterNotes('All')">All</button>
+        <button class="btn-filter notes-subj-filter" data-subj="Polity" onclick="App.filterNotes('Polity')">Polity</button>
+        <button class="btn-filter notes-subj-filter" data-subj="Economy" onclick="App.filterNotes('Economy')">Economy</button>
+        <button class="btn-filter notes-subj-filter" data-subj="Environment" onclick="App.filterNotes('Environment')">Environment</button>
+        <button class="btn-filter notes-subj-filter" data-subj="History" onclick="App.filterNotes('History')">History</button>
+        <button class="btn-filter notes-subj-filter" data-subj="Governance" onclick="App.filterNotes('Governance')">Governance</button>
+      </div>
+
+      <div id="notesGrid" class="notes-grid"></div>
+    </div>
+
+    <!-- ── PANEL: MISTAKE NOTEBOOK ── -->
+    <div id="panel-mistakes" class="panel">
+      <div class="mobile-panel-header">
+        <button class="menu-btn" onclick="App.openDrawer()"><span></span><span></span><span></span></button>
+        <div class="sh-title" style="font-size:1.15rem">Mistake Notebook</div>
+      </div>
+      <div class="section-heading"><div class="sh-title">Mistake Notebook</div><div class="sh-sub">Your wrong answers · Pattern analysis · Re-test</div></div>
+
+      <div class="mistakes-summary" id="mistakesSummary"></div>
+      <div class="mistakes-actions">
+        <button class="btn btn-primary" onclick="App.retestMistakes()">Re-test All Mistakes →</button>
+        <button class="btn btn-secondary" onclick="App.clearMistakes()">Clear Notebook</button>
+      </div>
+      <div id="mistakesGrid" class="mistakes-grid"></div>
+      <div id="mistakesEmpty" class="mistakes-empty" style="display:none">
+        <div style="font-size:2.5rem">🎯</div>
+        <div style="font-family:var(--serif);font-size:1.2rem;margin:0.5rem 0">No mistakes recorded yet</div>
+        <div style="font-family:var(--mono);font-size:0.6rem;color:var(--dust)">Answer MCQs to populate your mistake notebook</div>
+      </div>
+    </div>
+
+    <!-- ── PANEL: AI MENTOR ── -->
+    <div id="panel-mentor" class="panel">
+      <div class="mobile-panel-header">
+        <button class="menu-btn" onclick="App.openDrawer()"><span></span><span></span><span></span></button>
+        <div class="sh-title" style="font-size:1.15rem">AI Mentor</div>
+      </div>
+      <div class="section-heading"><div class="sh-title">AI Mentor</div><div class="sh-sub">Study planner · Answer evaluator · News simplifier</div></div>
+
+      <div class="mentor-tabs">
+        <button class="mentor-tab active" data-tab="planner" onclick="App.switchMentorTab('planner')">📅 Study Planner</button>
+        <button class="mentor-tab" data-tab="evaluator" onclick="App.switchMentorTab('evaluator')">✍️ Answer Check</button>
+        <button class="mentor-tab" data-tab="news" onclick="App.switchMentorTab('news')">📰 News Simplifier</button>
+        <button class="mentor-tab" data-tab="cognitive" onclick="App.switchMentorTab('cognitive')">🧠 Cognitive Map</button>
+      </div>
+
+      <!-- Study Planner Tab -->
+      <div id="mentor-planner" class="mentor-panel active-tab">
+        <div class="mentor-input-box">
+          <div class="mentor-label">Days until your exam</div>
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+            <input type="number" id="daysToExam" class="mentor-input" value="89" min="1" max="365" placeholder="89">
+            <select id="weakSubject" class="mentor-input" style="flex:2">
+              <option value="Environment">Weakest subject: Environment (42%)</option>
+              <option value="Economy">Economy (61%)</option>
+              <option value="Sci & Tech">Sci & Tech (55%)</option>
+              <option value="Geography">Geography (70%)</option>
+            </select>
+            <button class="btn btn-primary" onclick="App.generateStudyPlan()">Generate Plan →</button>
+          </div>
+        </div>
+        <div id="studyPlanOutput" class="mentor-output"></div>
+      </div>
+
+      <!-- Answer Evaluator Tab -->
+      <div id="mentor-evaluator" class="mentor-panel">
+        <div class="mentor-input-box">
+          <div class="mentor-label">Paste any UPSC Mains question + your answer</div>
+          <textarea id="mentorAnswerInput" class="answer-textarea" style="min-height:120px" placeholder="Question: [paste question here]&#10;&#10;Answer: [paste your answer here]"></textarea>
+          <button class="btn btn-primary" style="margin-top:0.6rem" onclick="App.evaluateAnswerAI()">Evaluate with AI →</button>
+        </div>
+        <div id="mentorEvalOutput" class="mentor-output"></div>
+      </div>
+
+      <!-- News Simplifier Tab -->
+      <div id="mentor-news" class="mentor-panel">
+        <div class="mentor-input-box">
+          <div class="mentor-label">Paste any news article or PIB press release</div>
+          <textarea id="mentorNewsInput" class="answer-textarea" style="min-height:120px" placeholder="Paste article text here...&#10;&#10;The AI will extract: 5 bullet points, UPSC relevance, possible questions, and key facts for Prelims."></textarea>
+          <button class="btn btn-primary" style="margin-top:0.6rem" onclick="App.simplifyNews()">Simplify for UPSC →</button>
+        </div>
+        <div id="mentorNewsOutput" class="mentor-output"></div>
+      </div>
+
+      <!-- Cognitive Map Tab -->
+      <div id="mentor-cognitive" class="mentor-panel">
+        <div class="mentor-label" style="margin-bottom:1rem">Your cognitive map — how the app sees your knowledge</div>
+        <div id="cognitiveMap" class="cognitive-map"></div>
+        <div class="cognitive-insights" id="cognitiveInsights"></div>
+      </div>
+    </div>
+
+    <!-- ── PANEL: DAILY FEED ── -->
+    <div id="panel-feed" class="panel">
+      <div class="mobile-panel-header">
+        <button class="menu-btn" onclick="App.openDrawer()"><span></span><span></span><span></span></button>
+        <div class="sh-title" style="font-size:1.15rem">Today's Digest</div>
+        <span style="font-family:var(--mono);font-size:0.5rem;color:var(--dust);margin-left:auto">Mar 7, 2026</span>
+      </div>
+      <div class="section-heading"><div class="sh-title">Today's Digest</div><div class="sh-sub">March 7, 2026 · 10 articles curated</div></div>
+
+      <!-- Feed filters -->
+      <div class="feed-filters">
+        <button class="feed-filter active" onclick="App.renderFeed('All');this.closest('.feed-filters').querySelectorAll('.feed-filter').forEach(b=>b.classList.remove('active'));this.classList.add('active')">All</button>
+        <button class="feed-filter" onclick="App.renderFeed('Polity');this.closest('.feed-filters').querySelectorAll('.feed-filter').forEach(b=>b.classList.remove('active'));this.classList.add('active')">Polity</button>
+        <button class="feed-filter" onclick="App.renderFeed('Economy');this.closest('.feed-filters').querySelectorAll('.feed-filter').forEach(b=>b.classList.remove('active'));this.classList.add('active')">Economy</button>
+        <button class="feed-filter" onclick="App.renderFeed('Environment');this.closest('.feed-filters').querySelectorAll('.feed-filter').forEach(b=>b.classList.remove('active'));this.classList.add('active')">Environment</button>
+        <button class="feed-filter" onclick="App.renderFeed('Int. Relations');this.closest('.feed-filters').querySelectorAll('.feed-filter').forEach(b=>b.classList.remove('active'));this.classList.add('active')">IR</button>
+        <button class="feed-filter" onclick="App.renderFeed('Sci & Tech');this.closest('.feed-filters').querySelectorAll('.feed-filter').forEach(b=>b.classList.remove('active'));this.classList.add('active')">Sci&Tech</button>
+      </div>
+
+      <div class="feed-grid" id="feedGrid"></div>
+    </div>
+
+    <!-- ── PANEL: PRELIMS MCQ ── -->
+    <div id="panel-prelims" class="panel">
+      <div class="mobile-panel-header">
+        <button class="menu-btn" onclick="App.openDrawer()"><span></span><span></span><span></span></button>
+        <div class="sh-title" style="font-size:1.15rem">Prelims MCQ</div>
+      </div>
+      <div class="section-heading"><div class="sh-title">Prelims MCQ Engine</div><div class="sh-sub">40 questions · Adaptive · PYQ tagged</div></div>
+
+      <!-- Filters -->
+      <div class="mcq-filter-bar">
+        <div class="filter-group">
+          <span class="filter-label">Subject:</span>
+          <div class="filter-scroll">
+            <button class="btn-filter mcq-filter-subject active" data-value="All" onclick="App.setMCQFilter('subject','All')">All</button>
+            <button class="btn-filter mcq-filter-subject" data-value="Polity" onclick="App.setMCQFilter('subject','Polity')">Polity</button>
+            <button class="btn-filter mcq-filter-subject" data-value="Economy" onclick="App.setMCQFilter('subject','Economy')">Economy</button>
+            <button class="btn-filter mcq-filter-subject" data-value="Environment" onclick="App.setMCQFilter('subject','Environment')">Environment</button>
+            <button class="btn-filter mcq-filter-subject" data-value="History" onclick="App.setMCQFilter('subject','History')">History</button>
+            <button class="btn-filter mcq-filter-subject" data-value="Geography" onclick="App.setMCQFilter('subject','Geography')">Geography</button>
+            <button class="btn-filter mcq-filter-subject" data-value="Science & Tech" onclick="App.setMCQFilter('subject','Science & Tech')">Sci&Tech</button>
+            <button class="btn-filter mcq-filter-subject" data-value="Governance" onclick="App.setMCQFilter('subject','Governance')">Governance</button>
+            <button class="btn-filter mcq-filter-subject" data-value="Ethics" onclick="App.setMCQFilter('subject','Ethics')">Ethics</button>
+          </div>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Difficulty:</span>
+          <button class="btn-filter mcq-filter-difficulty active" data-value="All" onclick="App.setMCQFilter('difficulty','All')">All</button>
+          <button class="btn-filter mcq-filter-difficulty" data-value="Easy" onclick="App.setMCQFilter('difficulty','Easy')">Easy</button>
+          <button class="btn-filter mcq-filter-difficulty" data-value="Medium" onclick="App.setMCQFilter('difficulty','Medium')">Medium</button>
+          <button class="btn-filter mcq-filter-difficulty" data-value="Hard" onclick="App.setMCQFilter('difficulty','Hard')">Hard</button>
+        </div>
+      </div>
+
+      <div id="mcqCard" class="mcq-card"></div>
+
+      <div class="mcq-stats">
+        <div class="stat-box" style="background:var(--green-pale);border-color:var(--green-india)"><div class="stat-box-val" style="color:var(--green-india)" id="stat-correct">0</div><div class="stat-box-lbl">Correct</div></div>
+        <div class="stat-box" style="background:var(--red-pale);border-color:var(--red)"><div class="stat-box-val" style="color:var(--red)" id="stat-wrong">0</div><div class="stat-box-lbl">Wrong</div></div>
+        <div class="stat-box" style="background:var(--saffron-pale);border-color:var(--saffron)"><div class="stat-box-val" style="color:var(--saffron)" id="stat-acc">—</div><div class="stat-box-lbl">Accuracy</div></div>
+        <div class="stat-box" style="background:var(--navy-pale);border-color:var(--navy)"><div class="stat-box-val" style="color:var(--navy)" id="stat-time">—</div><div class="stat-box-lbl">Avg Time</div></div>
+      </div>
+    </div>
+
+    <!-- ── PANEL: MAINS LAB ── -->
+    <div id="panel-mains" class="panel">
+      <div class="mobile-panel-header">
+        <button class="menu-btn" onclick="App.openDrawer()"><span></span><span></span><span></span></button>
+        <div class="sh-title" style="font-size:1.15rem">Mains Lab</div>
+      </div>
+      <div class="section-heading"><div class="sh-title">Mains Answer Lab</div><div class="sh-sub">5 questions · AI evaluation · Structure guide</div></div>
+
+      <!-- Question navigator -->
+      <div class="mains-q-nav">
+        <span class="filter-label">Question:</span>
+        <button class="mains-q-btn active btn-filter" onclick="App.renderMainsQuestion(0)">Q1 · GS II</button>
+        <button class="mains-q-btn btn-filter" onclick="App.renderMainsQuestion(1)">Q2 · GS III</button>
+        <button class="mains-q-btn btn-filter" onclick="App.renderMainsQuestion(2)">Q3 · GS II</button>
+        <button class="mains-q-btn btn-filter" onclick="App.renderMainsQuestion(3)">Q4 · GS I</button>
+        <button class="mains-q-btn btn-filter" onclick="App.renderMainsQuestion(4)">Q5 · GS IV</button>
+      </div>
+
+      <div class="mains-prompt">
+        <div class="mains-prompt-label" id="mainsPromptLabel">GS II · Governance · 15 Marks · 250 Words · 20 min</div>
+        <div class="mains-prompt-text" id="mainsPromptText"></div>
+      </div>
+
+      <div class="answer-frame">
+        <div class="answer-col">
+          <div class="answer-col-label">Your Answer</div>
+          <textarea class="answer-textarea" id="mainsTextarea" placeholder="Start writing your answer here..." oninput="App.saveAnswer()"></textarea>
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem">
+            <span id="wordCounter" style="font-family:var(--mono);font-size:0.55rem;color:var(--dust)">0 / 250 words</span>
+            <button class="btn btn-primary" onclick="App.submitAnswer()">Submit for AI Evaluation →</button>
+          </div>
+        </div>
+        <div class="answer-col">
+          <div class="answer-col-label">Structure Guide</div>
+          <div class="structure-guide" id="mainsStructure"></div>
+          <div style="margin-top:0.75rem">
+            <div class="answer-col-label">Keywords to Include</div>
+            <div style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-top:0.45rem" id="mainsKeywords"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PANEL: SYLLABUS MAP ── -->
+    <div id="panel-syllabus" class="panel">
+      <div class="mobile-panel-header">
+        <button class="menu-btn" onclick="App.openDrawer()"><span></span><span></span><span></span></button>
+        <div class="sh-title" style="font-size:1.15rem">Syllabus Map</div>
+      </div>
+      <div class="section-heading"><div class="sh-title">Syllabus Mapper</div><div class="sh-sub">Any topic → GS Paper → Syllabus section</div></div>
+
+      <div class="topic-search">
+        <div style="position:relative;flex:1">
+          <input class="topic-input" type="text" id="topicInput" placeholder="Type: 'uniform civil code', 'gst', 'artificial intelligence', 'federalism'..."/>
+          <div id="topicSuggestions" class="topic-suggestions"></div>
+        </div>
+        <button class="topic-btn" onclick="App.mapTopic()">Map →</button>
+      </div>
+
+      <div id="syllabusResult" style="display:none;padding:0.85rem;background:var(--parchment);border:1px solid var(--dust-light)">
+        <div style="font-family:var(--mono);font-size:0.55rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--dust);margin-bottom:0.4rem">Mapping: <span id="mappedTopic" style="color:var(--saffron)"></span></div>
+        <div id="mappingCards" style="display:flex;flex-wrap:wrap;gap:0.35rem;margin-bottom:0.5rem"></div>
+        <div id="mappingDesc" style="font-size:0.82rem;color:#555;font-style:italic"></div>
+      </div>
+
+      <div class="syllabus-info-box">
+        <div class="syl-info-title">Available Topic Lookups (try these)</div>
+        <div style="display:flex;flex-wrap:wrap;gap:0.35rem;margin-top:0.5rem">
+          <span class="suggestion-chip" onclick="document.getElementById('topicInput').value=this.textContent;App.mapTopic()">uniform civil code</span>
+          <span class="suggestion-chip" onclick="document.getElementById('topicInput').value=this.textContent;App.mapTopic()">gst</span>
+          <span class="suggestion-chip" onclick="document.getElementById('topicInput').value=this.textContent;App.mapTopic()">climate change</span>
+          <span class="suggestion-chip" onclick="document.getElementById('topicInput').value=this.textContent;App.mapTopic()">artificial intelligence</span>
+          <span class="suggestion-chip" onclick="document.getElementById('topicInput').value=this.textContent;App.mapTopic()">federalism</span>
+          <span class="suggestion-chip" onclick="document.getElementById('topicInput').value=this.textContent;App.mapTopic()">agriculture</span>
+          <span class="suggestion-chip" onclick="document.getElementById('topicInput').value=this.textContent;App.mapTopic()">tribal rights</span>
+          <span class="suggestion-chip" onclick="document.getElementById('topicInput').value=this.textContent;App.mapTopic()">poverty</span>
+          <span class="suggestion-chip" onclick="document.getElementById('topicInput').value=this.textContent;App.mapTopic()">judiciary</span>
+          <span class="suggestion-chip" onclick="document.getElementById('topicInput').value=this.textContent;App.mapTopic()">nuclear energy</span>
+          <span class="suggestion-chip" onclick="document.getElementById('topicInput').value=this.textContent;App.mapTopic()">education</span>
+          <span class="suggestion-chip" onclick="document.getElementById('topicInput').value=this.textContent;App.mapTopic()">cryptocurrency</span>
+        </div>
+      </div>
+
+      <div class="syllabus-map">
+        <div class="syllabus-node active-node"><div class="syl-subject">Polity</div><div class="syl-paper">GS I+II</div><div class="syl-relevance"><div class="syl-rel-fill" style="width:90%"></div></div></div>
+        <div class="syllabus-node"><div class="syl-subject">Economy</div><div class="syl-paper">GS III</div><div class="syl-relevance"><div class="syl-rel-fill" style="width:75%"></div></div></div>
+        <div class="syllabus-node"><div class="syl-subject">History</div><div class="syl-paper">GS I</div><div class="syl-relevance"><div class="syl-rel-fill" style="width:65%"></div></div></div>
+        <div class="syllabus-node"><div class="syl-subject">Geography</div><div class="syl-paper">GS I</div><div class="syl-relevance"><div class="syl-rel-fill" style="width:55%"></div></div></div>
+        <div class="syllabus-node"><div class="syl-subject">Environment</div><div class="syl-paper">GS III</div><div class="syl-relevance"><div class="syl-rel-fill" style="width:70%"></div></div></div>
+        <div class="syllabus-node"><div class="syl-subject">Governance</div><div class="syl-paper">GS II</div><div class="syl-relevance"><div class="syl-rel-fill" style="width:80%"></div></div></div>
+        <div class="syllabus-node"><div class="syl-subject">Sci & Tech</div><div class="syl-paper">GS III</div><div class="syl-relevance"><div class="syl-rel-fill" style="width:50%"></div></div></div>
+        <div class="syllabus-node"><div class="syl-subject">Ethics</div><div class="syl-paper">GS IV</div><div class="syl-relevance"><div class="syl-rel-fill" style="width:45%"></div></div></div>
+        <div class="syllabus-node"><div class="syl-subject">Int. Rel.</div><div class="syl-paper">GS II</div><div class="syl-relevance"><div class="syl-rel-fill" style="width:60%"></div></div></div>
+        <div class="syllabus-node"><div class="syl-subject">Disaster</div><div class="syl-paper">GS III</div><div class="syl-relevance"><div class="syl-rel-fill" style="width:35%"></div></div></div>
+        <div class="syllabus-node"><div class="syl-subject">Security</div><div class="syl-paper">GS III</div><div class="syl-relevance"><div class="syl-rel-fill" style="width:40%"></div></div></div>
+        <div class="syllabus-node"><div class="syl-subject">Essay</div><div class="syl-paper">Paper I</div><div class="syl-relevance"><div class="syl-rel-fill" style="width:30%"></div></div></div>
+      </div>
+    </div>
+
+    <!-- ── PANEL: REVISION ENGINE ── -->
+    <div id="panel-revision" class="panel">
+      <div class="mobile-panel-header">
+        <button class="menu-btn" onclick="App.openDrawer()"><span></span><span></span><span></span></button>
+        <div class="sh-title" style="font-size:1.15rem">Revision Engine</div>
+      </div>
+      <div class="section-heading"><div class="sh-title">Revision Engine</div><div class="sh-sub">Ebbinghaus Spaced Repetition · Day 1 / 7 / 30 / 90</div></div>
+
+      <div class="curve-container">
+        <div class="curve-title">Forgetting Curve — Without SRS (red) vs With SRS (green) · Orange dots = revision sessions</div>
+        <canvas id="forgettingCurve"></canvas>
+      </div>
+
+      <div style="display:flex;gap:0.6rem;flex-wrap:wrap;align-items:center">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div><span>Overdue</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--saffron)"></div><span>Due Today</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green-india)"></div><span>Fresh</span></div>
+        <button class="btn btn-secondary" style="margin-left:auto;font-size:0.58rem" onclick="App.addRevisionTopic()">+ Add Topic</button>
+      </div>
+
+      <div class="revision-grid" id="revisionGrid"></div>
+    </div>
+
+    <!-- ── PANEL: SCHEME TRACKER ── -->
+    <div id="panel-schemes" class="panel">
+      <div class="mobile-panel-header">
+        <button class="menu-btn" onclick="App.openDrawer()"><span></span><span></span><span></span></button>
+        <div class="sh-title" style="font-size:1.15rem">Schemes</div>
+      </div>
+      <div class="section-heading">
+        <div class="sh-title">Scheme Tracker</div>
+        <div class="sh-sub" id="schemesCount">20 schemes</div>
+      </div>
+
+      <div class="schemes-controls">
+        <input type="text" class="scheme-search" placeholder="Search scheme name, ministry, objective..." oninput="App.renderSchemes(undefined, this.value)">
+        <div class="scheme-filter-row">
+          <button class="btn btn-primary scheme-filter-btn" data-cat="All" onclick="App.renderSchemes('All')">All</button>
+          <button class="btn btn-secondary scheme-filter-btn" data-cat="Agriculture" onclick="App.renderSchemes('Agriculture')">Agriculture</button>
+          <button class="btn btn-secondary scheme-filter-btn" data-cat="Health" onclick="App.renderSchemes('Health')">Health</button>
+          <button class="btn btn-secondary scheme-filter-btn" data-cat="Education" onclick="App.renderSchemes('Education')">Education</button>
+          <button class="btn btn-secondary scheme-filter-btn" data-cat="Environment" onclick="App.renderSchemes('Environment')">Environment</button>
+          <button class="btn btn-secondary scheme-filter-btn" data-cat="Energy" onclick="App.renderSchemes('Energy')">Energy</button>
+          <button class="btn btn-secondary scheme-filter-btn" data-cat="Housing" onclick="App.renderSchemes('Housing')">Housing</button>
+          <button class="btn btn-secondary scheme-filter-btn" data-cat="Employment" onclick="App.renderSchemes('Employment')">Employment</button>
+          <button class="btn btn-secondary scheme-filter-btn" data-cat="Economy" onclick="App.renderSchemes('Economy')">Economy</button>
+          <button class="btn btn-secondary scheme-filter-btn" data-cat="Technology" onclick="App.renderSchemes('Technology')">Technology</button>
+          <button class="btn btn-secondary scheme-filter-btn" data-cat="Finance" onclick="App.renderSchemes('Finance')">Finance</button>
+        </div>
+      </div>
+
+      <div class="scheme-table-wrap">
+        <table class="scheme-table">
+          <thead><tr><th>Scheme</th><th>Ministry</th><th>Objective</th><th>Beneficiaries</th><th>Budget</th><th>Type</th></tr></thead>
+          <tbody id="schemesBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── PANEL: ESSAY STUDIO ── -->
+    <div id="panel-essay" class="panel">
+      <div class="mobile-panel-header">
+        <button class="menu-btn" onclick="App.openDrawer()"><span></span><span></span><span></span></button>
+        <div class="sh-title" style="font-size:1.15rem">Essay Studio</div>
+      </div>
+      <div class="section-heading"><div class="sh-title">Essay Practice Studio</div><div class="sh-sub">6 prompts · Idea frameworks · Practice writing</div></div>
+
+      <div class="essay-grid" id="essayPrompts"></div>
+
+      <div id="essayPanel" style="display:none" class="essay-write-area">
+        <div class="mains-prompt">
+          <div class="mains-prompt-label">Essay Prompt</div>
+          <div class="mains-prompt-text" id="essayTopicDisplay"></div>
+        </div>
+        <div style="margin:0.75rem 0">
+          <div class="answer-col-label">Idea Hooks &amp; Angles</div>
+          <div style="display:flex;flex-wrap:wrap;gap:0.35rem;margin-top:0.45rem" id="essayHints"></div>
+        </div>
+        <textarea class="answer-textarea" id="essayTextarea" style="min-height:280px" placeholder="Write your essay here. Aim for 1000–1200 words. Structure: Introduction → 3-4 body sections → Conclusion" oninput="const w=this.value.trim().split(/\s+/).filter(Boolean).length; document.getElementById('essayWordCount').textContent=w+' / 1000 words'; document.getElementById('essayWordCount').style.color=w>1000?'var(--red)':w>900?'var(--saffron)':'var(--dust)'"></textarea>
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem">
+          <span id="essayWordCount" style="font-family:var(--mono);font-size:0.55rem;color:var(--dust)">0 / 1000 words</span>
+          <div style="display:flex;gap:0.5rem">
+            <button class="btn btn-secondary" onclick="document.getElementById('essayPanel').style.display='none'">← Back</button>
+            <button class="btn btn-primary">Submit for Review</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PANEL: PREDICTION ENGINE ── -->
+    <div id="panel-predict" class="panel">
+      <div class="mobile-panel-header">
+        <button class="menu-btn" onclick="App.openDrawer()"><span></span><span></span><span></span></button>
+        <div class="sh-title" style="font-size:1.1rem">Prediction Engine</div>
+      </div>
+      <div class="section-heading">
+        <div class="sh-title">UPSC 2026 Probability Engine</div>
+        <div class="sh-sub">25-year pattern analysis · Statistical forecasting · Not a crystal ball</div>
+      </div>
+
+      <!-- Prediction tabs -->
+      <div class="pred-tabs">
+        <button class="pred-tab active"  data-tab="forecast"  onclick="PredictionEngine.switchTab('forecast')">📊 Forecast</button>
+        <button class="pred-tab"         data-tab="frequency" onclick="PredictionEngine.switchTab('frequency')">📈 Frequency</button>
+        <button class="pred-tab"         data-tab="gaps"      onclick="PredictionEngine.switchTab('gaps')">⚠️ Gap Alert</button>
+        <button class="pred-tab"         data-tab="waves"     onclick="PredictionEngine.switchTab('waves')">🌊 Waves</button>
+        <button class="pred-tab"         data-tab="simulator" onclick="PredictionEngine.switchTab('simulator')">🎯 Simulated Paper</button>
+        <button class="pred-tab"         data-tab="mains"     onclick="PredictionEngine.switchTab('mains')">✍️ Predicted Mains</button>
+        <button class="pred-tab"         data-tab="verbs"     onclick="PredictionEngine.switchTab('verbs')">🔤 Verb Trends</button>
+      </div>
+
+      <!-- Tab panels -->
+      <div id="pred-forecast"  class="pred-panel active-tab"></div>
+      <div id="pred-frequency" class="pred-panel">
+        <div class="freq-controls" id="freqControls"></div>
+        <div class="freq-chart-wrap"><canvas id="freqCanvas" height="220"></canvas></div>
+        <div class="freq-insight" id="freqInsight"></div>
+        <div class="freq-table-wrap" id="freqTable"></div>
+      </div>
+      <div id="pred-gaps"      class="pred-panel"></div>
+      <div id="pred-waves"     class="pred-panel"></div>
+      <div id="pred-simulator" class="pred-panel"></div>
+      <div id="pred-mains"     class="pred-panel"></div>
+      <div id="pred-verbs"     class="pred-panel"></div>
+    </div>
+
+    <!-- ── PANEL: ANALYTICS ── -->
+    <div id="panel-analytics" class="panel">
+      <div class="mobile-panel-header">
+        <button class="menu-btn" onclick="App.openDrawer()"><span></span><span></span><span></span></button>
+        <div class="sh-title" style="font-size:1.15rem">Analytics</div>
+      </div>
+      <div class="section-heading"><div class="sh-title">Performance Analytics</div><div class="sh-sub">Real-time · AI-powered weakness detection</div></div>
+
+      <div class="analytics-grid">
+        <div class="chart-box"><div class="chart-box-title">30-Day Accuracy Trend</div><canvas id="accuracyChart"></canvas></div>
+        <div class="chart-box"><div class="chart-box-title">Subject Weakness Radar</div><canvas id="radarChart"></canvas></div>
+      </div>
+
+      <div class="coach-rec">
+        <div class="coach-rec-title">AI Coach Recommendations</div>
+        <div class="rec-item" style="border-left:3px solid var(--red);background:var(--red-pale)"><div class="rec-tag" style="color:var(--red)">CRITICAL</div><div class="rec-text">Environment accuracy at 42% — 18% below target. Focus on biodiversity treaties, National Parks, pollution laws. Allocate 90 min/day for 2 weeks.</div></div>
+        <div class="rec-item" style="border-left:3px solid var(--saffron);background:var(--saffron-pale)"><div class="rec-tag" style="color:#8a4500">IMPROVE</div><div class="rec-text">Economy: Monetary policy strong but fiscal policy gaps remain. Revise FRBM Act, deficit types, and budget terminology before next mock test.</div></div>
+        <div class="rec-item" style="border-left:3px solid var(--green-india);background:var(--green-pale)"><div class="rec-tag" style="color:var(--green-india)">STRONG</div><div class="rec-text">Polity performance excellent at 84% — top 15% of platform users. Maintain with weekly revision only. Ready for advanced constitutional law questions.</div></div>
+      </div>
+
+      <!-- Subject breakdown -->
+      <div class="analytics-subject-grid">
+        <div class="analytics-subject-card"><div class="ascard-subject">Polity</div><div class="ascard-pct" style="color:var(--green-india)">84%</div><div class="ascard-bar"><div style="width:84%;background:var(--green-india)"></div></div><div class="ascard-q">42 answered</div></div>
+        <div class="analytics-subject-card"><div class="ascard-subject">Economy</div><div class="ascard-pct" style="color:var(--saffron)">61%</div><div class="ascard-bar"><div style="width:61%;background:var(--saffron)"></div></div><div class="ascard-q">28 answered</div></div>
+        <div class="analytics-subject-card"><div class="ascard-subject">History</div><div class="ascard-pct" style="color:var(--green-india)">78%</div><div class="ascard-bar"><div style="width:78%;background:var(--navy)"></div></div><div class="ascard-q">36 answered</div></div>
+        <div class="analytics-subject-card"><div class="ascard-subject">Environment</div><div class="ascard-pct" style="color:var(--red)">42%</div><div class="ascard-bar"><div style="width:42%;background:var(--red)"></div></div><div class="ascard-q">24 answered</div></div>
+        <div class="analytics-subject-card"><div class="ascard-subject">Geography</div><div class="ascard-pct" style="color:var(--saffron)">70%</div><div class="ascard-bar"><div style="width:70%;background:#1a7a8c)"></div></div><div class="ascard-q">20 answered</div></div>
+        <div class="analytics-subject-card"><div class="ascard-subject">Sci & Tech</div><div class="ascard-pct" style="color:var(--saffron)">55%</div><div class="ascard-bar"><div style="width:55%;background:#7a3bbf"></div></div><div class="ascard-q">18 answered</div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══════════ MOBILE BOTTOM NAV ══════════ -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="bnav-tab active" data-panel="home" onclick="App.switchPanel('home','mobile')"><div class="bnav-icon">🏠</div><div class="bnav-label">Home</div></button>
+    <button class="bnav-tab" data-panel="feed" onclick="App.switchPanel('feed','mobile')"><div class="bnav-icon">📰</div><div class="bnav-label">Feed</div></button>
+    <button class="bnav-tab" data-panel="prelims" onclick="App.switchPanel('prelims','mobile')"><div class="bnav-icon">❓</div><div class="bnav-label">MCQ</div></button>
+    <button class="bnav-tab" data-panel="mains" onclick="App.switchPanel('mains','mobile')"><div class="bnav-icon">✍️</div><div class="bnav-label">Mains</div></button>
+    <button class="bnav-tab" data-panel="notes" onclick="App.switchPanel('notes','mobile')"><div class="bnav-icon">📖</div><div class="bnav-label">Notes</div></button>
+    <button class="bnav-tab" data-panel="revision" onclick="App.switchPanel('revision','mobile')"><div class="bnav-icon">🔄</div><div class="bnav-label">Revise</div></button>
+    <button class="bnav-tab" data-panel="mistakes" onclick="App.switchPanel('mistakes','mobile')"><div class="bnav-icon">🔍</div><div class="bnav-label">Mistakes</div></button>
+    <button class="bnav-tab" data-panel="mentor" onclick="App.switchPanel('mentor','mobile')"><div class="bnav-icon">🤖</div><div class="bnav-label">AI</div></button>
+    <button class="bnav-tab" data-panel="predict" onclick="App.switchPanel('predict','mobile')"><div class="bnav-icon">🔮</div><div class="bnav-label">Predict</div></button>
+        <button class="bnav-tab" data-panel="analytics" onclick="App.switchPanel('analytics','mobile')"><div class="bnav-icon">📊</div><div class="bnav-label">Stats</div></button>
+  </div>
+</nav>
+
+<!-- ══════════ MOBILE DRAWER ══════════ -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="App.closeDrawer()"></div>
+<aside class="sidebar-drawer" id="sidebarDrawer">
+  <button class="drawer-close" onclick="App.closeDrawer()">✕ Close</button>
+  <div class="sidebar-section">
+    <div class="section-label">Progress</div>
+    <div class="progress-ring-wrap"><svg class="ring-svg" width="48" height="48" viewBox="0 0 60 60"><circle class="ring-bg" cx="30" cy="30" r="24"/><circle class="ring-fill" cx="30" cy="30" r="24" stroke="#e8760a" stroke-dasharray="150.8" stroke-dashoffset="48"/></svg><div><div class="ring-pct">68%</div><div class="ring-name">Prelims</div></div></div>
+    <div class="progress-ring-wrap"><svg class="ring-svg" width="48" height="48" viewBox="0 0 60 60"><circle class="ring-bg" cx="30" cy="30" r="24"/><circle class="ring-fill" cx="30" cy="30" r="24" stroke="#1a6b3c" stroke-dasharray="150.8" stroke-dashoffset="75"/></svg><div><div class="ring-pct">50%</div><div class="ring-name">Mains</div></div></div>
+  </div>
+  <div class="sidebar-section">
+    <div class="section-label">Subject Coverage</div>
+    <div class="subject-bar"><div class="bar-header"><span class="bar-name">Polity</span><span class="bar-pct">84%</span></div><div class="bar-track"><div class="bar-fill" style="width:84%;background:var(--navy)"></div></div></div>
+    <div class="subject-bar"><div class="bar-header"><span class="bar-name">Economy</span><span class="bar-pct">61%</span></div><div class="bar-track"><div class="bar-fill" style="width:61%;background:var(--green-india)"></div></div></div>
+    <div class="subject-bar"><div class="bar-header"><span class="bar-name">History</span><span class="bar-pct">78%</span></div><div class="bar-track"><div class="bar-fill" style="width:78%;background:var(--saffron)"></div></div></div>
+    <div class="subject-bar"><div class="bar-header"><span class="bar-name">Environment</span><span class="bar-pct">42%</span></div><div class="bar-track"><div class="bar-fill" style="width:42%;background:var(--red)"></div></div></div>
+    <div class="subject-bar"><div class="bar-header"><span class="bar-name">Sci & Tech</span><span class="bar-pct">55%</span></div><div class="bar-track"><div class="bar-fill" style="width:55%;background:#7a3bbf"></div></div></div>
+  </div>
+  <div class="sidebar-section">
+    <div class="section-label">March Streak</div>
+    <div class="streak-row" id="streakM"></div>
+  </div>
+  <div class="sidebar-section">
+    <div class="section-label">AI Coach</div>
+    <div class="insight-card"><div class="insight-label">Pattern Detected</div><div class="insight-text">Environment accuracy dropped 18%. Focus on biodiversity conventions and national parks this week.</div></div>
+  </div>
+  <div class="sidebar-section">
+    <div class="section-label">Upcoming</div>
+    <div class="upcoming-item"><div class="upcoming-date">+7d</div><div class="upcoming-text">Mock Test 8 — Full Prelims</div></div>
+    <div class="upcoming-item"><div class="upcoming-date">+14d</div><div class="upcoming-text">Mains Marathon — GS II Economy</div></div>
+    <div class="upcoming-item"><div class="upcoming-date" style="color:var(--saffron)">+89d</div><div class="upcoming-text" style="color:var(--saffron);font-weight:600">UPSC Prelims 2026</div></div>
+  </div>
+  <div class="sidebar-section">
+    <div class="section-label">Navigate</div>
+    <div style="display:flex;flex-direction:column;gap:0.35rem">
+      <button class="btn btn-secondary" style="font-size:0.6rem;text-align:left" onclick="App.switchPanel('feed','mobile');App.closeDrawer()">📰 Daily Feed</button>
+      <button class="btn btn-secondary" style="font-size:0.6rem;text-align:left" onclick="App.switchPanel('prelims','mobile');App.closeDrawer()">❓ Prelims MCQ</button>
+      <button class="btn btn-secondary" style="font-size:0.6rem;text-align:left" onclick="App.switchPanel('mains','mobile');App.closeDrawer()">✍️ Mains Lab</button>
+      <button class="btn btn-secondary" style="font-size:0.6rem;text-align:left" onclick="App.switchPanel('revision','mobile');App.closeDrawer()">🔄 Revision Engine</button>
+      <button class="btn btn-secondary" style="font-size:0.6rem;text-align:left" onclick="App.switchPanel('schemes','mobile');App.closeDrawer()">📋 Scheme Tracker</button>
+      <button class="btn btn-secondary" style="font-size:0.6rem;text-align:left" onclick="App.switchPanel('essay','mobile');App.closeDrawer()">📝 Essay Studio</button>
+    </div>
+  </div>
+</aside>
+
+<!-- ══════════ NEWS MODAL ══════════ -->
+<div class="modal-overlay" id="newsModal" onclick="if(event.target===this)App.closeNewsModal()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="newsModalTitle"></div>
+      <button class="modal-close" onclick="App.closeNewsModal()">✕</button>
+    </div>
+    <div class="modal-body" id="newsModalBody"></div>
+  </div>
+</div>
+
+<!-- ══════════ EVAL MODAL ══════════ -->
+<div class="modal-overlay" id="evalModal" onclick="if(event.target===this)App.closeEvalModal()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">AI Answer Evaluation</div>
+      <button class="modal-close" onclick="App.closeEvalModal()">✕</button>
+    </div>
+    <div class="modal-body" id="evalBody"></div>
+  </div>
+</div>
+
+<!-- ══════════ SPLASH SCREEN ══════════ -->
+<div id="splashScreen" class="splash-screen">
+  <div class="splash-content">
+    <div class="splash-emblem">
+      <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="72" height="72" fill="#0d0d0d"/>
+        <rect y="0" width="72" height="4" fill="#e8760a"/>
+        <text x="36" y="46" font-family="'Bebas Neue',sans-serif" font-size="22" fill="#f5f0e8" text-anchor="middle" letter-spacing="3">IAS</text>
+        <rect y="68" width="72" height="4" fill="#1a6b3c"/>
+      </svg>
+    </div>
+    <div class="splash-title">UPSC Command Center</div>
+    <div class="splash-sub">Civil Services Preparation Platform</div>
+    <div class="splash-loader">
+      <div class="splash-bar"></div>
+    </div>
+    <div class="splash-status" id="splashStatus">Loading content...</div>
+  </div>
+</div>
+
+<!-- ══════════ DATA + APP ══════════ -->
+<script src="data/questions.js"></script>
+<script src="data/extended.js"></script>
+<script src="data/news.js"></script>
+<script src="data/content.js"></script>
+<script src="js/app.js"></script>
+<script src="data/pattern-engine.js"></script>
+<script src="js/prediction-engine.js"></script>
+<script src="js/app-extended.js"></script>
+<script src="js/pwa.js"></script>
+
+<script>
+// Hide splash after app loads
+window.addEventListener('load', () => {
+  const splash = document.getElementById('splashScreen');
+  const status = document.getElementById('splashStatus');
+  if (!splash) return;
+  let progress = 0;
+  const msgs = ['Loading questions...', 'Preparing revision data...', 'Setting up offline cache...', 'Ready!'];
+  const interval = setInterval(() => {
+    progress++;
+    if (status && msgs[progress - 1]) status.textContent = msgs[progress - 1];
+    const bar = splash.querySelector('.splash-bar');
+    if (bar) bar.style.width = (progress / msgs.length * 100) + '%';
+    if (progress >= msgs.length) {
+      clearInterval(interval);
+      setTimeout(() => {
+        splash.classList.add('fade-out');
+        setTimeout(() => splash.remove(), 500);
+      }, 400);
+    }
+  }, 300);
+});
+</script>
+</body>
+</html>
