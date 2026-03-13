@@ -1,310 +1,577 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0a0a0f">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>UPSC Learning Organism</title>
-<link rel="manifest" href="manifest.json">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<meta name="theme-color" content="#050510"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>UPSC Cosmos v6</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Space+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/app.css"/>
 </head>
 <body>
-<!-- ══ SPLASH SCREEN ══ -->
-<div id="splash">
-  <div class="splash-inner">
-    <div class="splash-orb"></div>
-    <div class="splash-logo">LO</div>
-    <div class="splash-title">LEARNING ORGANISM</div>
-    <div class="splash-sub">UPSC ADAPTIVE INTELLIGENCE</div>
-    <div class="splash-bar-wrap"><div class="splash-bar" id="splashBar"></div></div>
-    <div class="splash-caption" id="splashCaption">Initialising knowledge graph…</div>
-  </div>
-</div>
 
-<!-- ══ APP SHELL ══ -->
-<div id="app" style="display:none">
+<!-- ═══════════════════════════════════════════ -->
+<!--  APP SHELL                                  -->
+<!-- ═══════════════════════════════════════════ -->
 
-  <!-- ─ DESKTOP SIDEBAR ─ -->
-  <aside id="sidebar">
-    <div class="sb-logo">
-      <div class="sb-logo-mark">LO</div>
-      <div class="sb-logo-text">Learning<br>Organism</div>
-    </div>
-    <div class="sb-xp-pod" id="sbXpPod">
-      <div class="sb-xp-rank" id="sbRank">Aspirant</div>
-      <div class="sb-xp-bar-wrap"><div class="sb-xp-bar" id="sbXpBar" style="width:0%"></div></div>
-      <div class="sb-xp-val" id="sbXpVal">0 XP</div>
-    </div>
-    <nav class="sb-nav">
-      <button class="sb-btn active" data-panel="home"      onclick="App.goto('home')">       <span class="sb-icon">⬡</span> Dashboard   </button>
-      <button class="sb-btn"        data-panel="diagnostic" onclick="App.goto('diagnostic')"> <span class="sb-icon">🧬</span> Diagnostic  </button>
-      <button class="sb-btn"        data-panel="ncert"      onclick="App.goto('ncert')">      <span class="sb-icon">📖</span> NCERT Learn </button>
-      <button class="sb-btn"        data-panel="graph"      onclick="App.goto('graph')">      <span class="sb-icon">🕸</span> Knowledge Map</button>
-      <button class="sb-btn"        data-panel="quiz"       onclick="App.goto('quiz')">       <span class="sb-icon">⚡</span> Daily Quiz  </button>
-      <button class="sb-btn"        data-panel="debate"     onclick="App.goto('debate')">     <span class="sb-icon">⚔️</span> Debate Mode </button>
-      <button class="sb-btn"        data-panel="options_ml" onclick="App.goto('options_ml')"> <span class="sb-icon">🔢</span> Option ML   </button>
-      <button class="sb-btn"        data-panel="plan"       onclick="App.goto('plan')">       <span class="sb-icon">🗓</span> Study Plan  </button>
-      <div class="sb-divider"></div>
-      <button class="sb-btn"        data-panel="concept"    onclick="App.goto('concept')">    <span class="sb-icon">💡</span> Concept/Day </button>
-      <button class="sb-btn"        data-panel="eli5"       onclick="App.goto('eli5')">       <span class="sb-icon">🧒</span> ELI5 Mode   </button>
-    </nav>
-    <div class="sb-footer">UPSC 2026 · v4.0</div>
-  </aside>
+<div id="app">
 
-  <!-- ─ MAIN CONTENT ─ -->
-  <main id="main">
-    <!-- MOBILE TOPBAR -->
-    <div class="topbar" id="topbar">
-      <button class="topbar-menu" onclick="App.toggleDrawer()">☰</button>
-      <div class="topbar-title" id="topbarTitle">Dashboard</div>
-      <div class="topbar-xp" id="topbarXP">0 XP</div>
+  <!-- ── SIDEBAR NAV ───────────────────────── -->
+  <nav id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">⬡</div>
+      <div class="logo-text">COSMOS</div>
     </div>
 
-    <!-- ══ PANEL: HOME / DASHBOARD ══ -->
-    <div id="panel-home" class="panel active">
-      <div class="panel-hero">
-        <div class="hero-greeting" id="heroGreeting">Good morning.</div>
-        <div class="hero-sub">Your learning organism is alive.</div>
-        <div class="hero-streak" id="heroStreak">
-          <span class="streak-fire">🔥</span>
-          <span id="streakCount">0</span> day streak
-        </div>
-      </div>
+    <div class="nav-section-label">COMMAND</div>
+    <button class="nav-btn active" onclick="navigate('home')" data-panel="home">
+      <span class="nav-icon">🏠</span><span class="nav-label">Mission Control</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('diagnostic')" data-panel="diagnostic">
+      <span class="nav-icon">🧬</span><span class="nav-label">Diagnostic Scan</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('quiz')" data-panel="quiz">
+      <span class="nav-icon">⚡</span><span class="nav-label">Practice Quiz</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('affairs')" data-panel="affairs">
+      <span class="nav-icon">📡</span><span class="nav-label">Current Affairs</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('revision')" data-panel="revision">
+      <span class="nav-icon">🔁</span><span class="nav-label">Revision Engine</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('performance')" data-panel="performance">
+      <span class="nav-icon">📊</span><span class="nav-label">Analytics</span>
+    </button>
 
-      <!-- Today's snapshot -->
-      <div class="home-grid">
-        <div class="hg-card hg-card-wide" id="dailyConceptCard">
-          <div class="hg-label">CONCEPT OF THE DAY</div>
-          <div class="hg-cod-title" id="codTitle">Loading…</div>
-          <div class="hg-cod-subject" id="codSubject"></div>
-          <div class="hg-cod-explain" id="codExplain"></div>
-          <div class="hg-cod-eli5" id="codEli5"></div>
-          <button class="hg-btn" onclick="App.goto('concept')">Test yourself →</button>
-        </div>
+    <div class="nav-section-label">COGNITIVE</div>
+    <button class="nav-btn" onclick="navigate('ncert')" data-panel="ncert">
+      <span class="nav-icon">📚</span><span class="nav-label">NCERT Cosmos</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('graph')" data-panel="graph">
+      <span class="nav-icon">🌌</span><span class="nav-label">Knowledge Galaxy</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('concept')" data-panel="concept">
+      <span class="nav-icon">💡</span><span class="nav-label">Concept Engine</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('debate')" data-panel="debate">
+      <span class="nav-icon">⚔️</span><span class="nav-label">Debate Mode</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('essay')" data-panel="essay">
+      <span class="nav-icon">✍️</span><span class="nav-label">Essay Studio</span>
+    </button>
 
-        <!-- Knowledge Heatmap — quick view -->
-        <div class="hg-card">
-          <div class="hg-label">MASTERY HEATMAP</div>
-          <div class="hg-heatmap" id="quickHeatmap"></div>
-          <button class="hg-btn" onclick="App.goto('graph')">Full map →</button>
-        </div>
+    <div class="nav-section-label">INTELLIGENCE</div>
+    <button class="nav-btn" onclick="navigate('pattern')" data-panel="pattern">
+      <span class="nav-icon">🎯</span><span class="nav-label">PYQ Pattern</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('cluster')" data-panel="cluster">
+      <span class="nav-icon">🔗</span><span class="nav-label">Concept Clusters</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('pyqlineage')" data-panel="pyqlineage">
+      <span class="nav-icon">📈</span><span class="nav-label">PYQ Lineage</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('timeline')" data-panel="timeline">
+      <span class="nav-icon">🕐</span><span class="nav-label">Policy Timeline</span>
+    </button>
 
-        <!-- Today's agenda -->
-        <div class="hg-card">
-          <div class="hg-label">TODAY'S AGENDA</div>
-          <div class="hg-agenda" id="todayAgenda"></div>
-        </div>
-
-        <!-- Progress rings -->
-        <div class="hg-card">
-          <div class="hg-label">WEEK PROGRESS</div>
-          <div class="hg-rings" id="weekRings"></div>
-        </div>
-
-        <!-- Weak area alert -->
-        <div class="hg-card hg-alert-card" id="weakAlert">
-          <div class="hg-label">WEAK ZONE ALERT</div>
-          <div id="weakAlertContent"></div>
-        </div>
-
-        <!-- Streak calendar -->
-        <div class="hg-card">
-          <div class="hg-label">STUDY STREAK</div>
-          <div class="hg-streak-cal" id="streakCal"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══ PANEL: DIAGNOSTIC ══ -->
-    <div id="panel-diagnostic" class="panel">
-      <div id="diag-intro">
-        <div class="diag-hero">
-          <div class="diag-hero-icon">🧬</div>
-          <div class="diag-hero-text">
-            <h2>Intellectual MRI Scan</h2>
-            <p>50 diagnostic questions across 6 subjects. The system will map your current knowledge graph and generate a personalised study plan. Takes ~15 minutes.</p>
-          </div>
-        </div>
-        <div class="diag-config">
-          <div class="diag-config-title">Your profile</div>
-          <div class="diag-form-row">
-            <label>Name</label>
-            <input type="text" id="diagName" placeholder="Enter your name" class="lo-input">
-          </div>
-          <div class="diag-form-row">
-            <label>Exam target</label>
-            <select id="diagTarget" class="lo-input">
-              <option value="2026">UPSC 2026</option>
-              <option value="2027">UPSC 2027</option>
-              <option value="explore">Just exploring</option>
-            </select>
-          </div>
-          <div class="diag-form-row">
-            <label>Daily study time</label>
-            <select id="diagHours" class="lo-input">
-              <option value="2">2 hours</option>
-              <option value="4" selected>4 hours</option>
-              <option value="6">6 hours</option>
-              <option value="8">8+ hours</option>
-            </select>
-          </div>
-        </div>
-        <button class="lo-btn-primary diag-start-btn" onclick="Diagnostic.start()">
-          Begin Diagnostic →
-        </button>
-        <p class="diag-note">55 questions · Adaptive difficulty · Results in under 20 mins</p>
-      </div>
-      <div id="diag-exam" style="display:none"></div>
-      <div id="diag-results" style="display:none"></div>
-    </div>
-
-    <!-- ══ PANEL: NCERT LEARN ══ -->
-    <div id="panel-ncert" class="panel">
-      <div id="ncert-home">
-        <div class="panel-title-row">
-          <h2>NCERT Interactive Modules</h2>
-          <div class="panel-sub">Concept → Example → Quiz → Summary</div>
-        </div>
-        <div class="ncert-subject-filter">
-          <button class="lo-filter active" data-subj="all" onclick="NCERT.filter('all')">All</button>
-          <button class="lo-filter" data-subj="Polity" onclick="NCERT.filter('Polity')">Polity</button>
-          <button class="lo-filter" data-subj="Economy" onclick="NCERT.filter('Economy')">Economy</button>
-          <button class="lo-filter" data-subj="Environment" onclick="NCERT.filter('Environment')">Environment</button>
-          <button class="lo-filter" data-subj="History" onclick="NCERT.filter('History')">History</button>
-        </div>
-        <div class="ncert-module-grid" id="ncertGrid"></div>
-      </div>
-      <div id="ncert-lesson" style="display:none"></div>
-    </div>
-
-    <!-- ══ PANEL: KNOWLEDGE GRAPH ══ -->
-    <div id="panel-graph" class="panel">
-      <div class="panel-title-row">
-        <h2>Knowledge Graph</h2>
-        <div class="panel-sub">Your cognitive fingerprint · Each node = one UPSC topic</div>
-      </div>
-      <div class="graph-legend">
-        <span class="gl-item gl-mastered">■ Mastered (80%+)</span>
-        <span class="gl-item gl-learning">■ Learning (40–79%)</span>
-        <span class="gl-item gl-weak">■ Weak (1–39%)</span>
-        <span class="gl-item gl-untouched">■ Untouched</span>
-      </div>
-      <div class="graph-subject-filter" id="graphSubjFilter"></div>
-      <div class="graph-canvas-wrap">
-        <canvas id="graphCanvas"></canvas>
-        <div class="graph-tooltip" id="graphTooltip" style="display:none"></div>
-      </div>
-      <div class="graph-stats-row" id="graphStatsRow"></div>
-      <div class="graph-node-detail" id="graphNodeDetail" style="display:none"></div>
-    </div>
-
-    <!-- ══ PANEL: DAILY QUIZ ══ -->
-    <div id="panel-quiz" class="panel">
-      <div id="quiz-home">
-        <div class="panel-title-row">
-          <h2>Daily Quiz</h2>
-          <div class="panel-sub">Adaptive difficulty · Targets your weak nodes</div>
-        </div>
-        <div class="quiz-mode-grid">
-          <div class="qm-card" onclick="Quiz.start('adaptive')">
-            <div class="qm-icon">🎯</div>
-            <div class="qm-title">Adaptive Mode</div>
-            <div class="qm-desc">Questions selected from your weakest knowledge nodes</div>
-          </div>
-          <div class="qm-card" onclick="Quiz.start('subject')">
-            <div class="qm-icon">📚</div>
-            <div class="qm-title">Subject Focus</div>
-            <div class="qm-desc">Choose a subject and drill deep</div>
-          </div>
-          <div class="qm-card" onclick="Quiz.start('timed')">
-            <div class="qm-icon">⏱</div>
-            <div class="qm-title">Timed Sprint</div>
-            <div class="qm-desc">10 questions, 90 seconds each, exam pressure</div>
-          </div>
-          <div class="qm-card" onclick="Quiz.start('conceptday')">
-            <div class="qm-icon">💡</div>
-            <div class="qm-title">Concept of Day</div>
-            <div class="qm-desc">5 questions around today's featured concept</div>
-          </div>
-        </div>
-        <div class="quiz-recent" id="quizRecent"></div>
-      </div>
-      <div id="quiz-active" style="display:none"></div>
-    </div>
-
-    <!-- ══ PANEL: DEBATE MODE ══ -->
-    <div id="panel-debate" class="panel">
-      <div class="panel-title-row">
-        <h2>Debate Mode</h2>
-        <div class="panel-sub">Both sides of contested issues · For mains quality</div>
-      </div>
-      <div class="debate-grid" id="debateGrid"></div>
-    </div>
-
-    <!-- ══ PANEL: OPTION ML ══ -->
-    <div id="panel-options_ml" class="panel">
-      <div class="panel-title-row">
-        <h2>Answer Option ML Analysis</h2>
-        <div class="panel-sub">25 years of UPSC answer keys · Statistical pattern detection</div>
-      </div>
-      <div id="optionsML"></div>
-    </div>
-
-    <!-- ══ PANEL: STUDY PLAN ══ -->
-    <div id="panel-plan" class="panel">
-      <div class="panel-title-row">
-        <h2>Personal Study Plan</h2>
-        <div class="panel-sub">AI-generated learning path based on your diagnostic</div>
-      </div>
-      <div id="studyPlanContent"></div>
-    </div>
-
-    <!-- ══ PANEL: CONCEPT OF DAY ══ -->
-    <div id="panel-concept" class="panel">
-      <div class="panel-title-row">
-        <h2>Concept of the Day</h2>
-        <div class="panel-sub">One deep concept · One clear explanation · One quiz</div>
-      </div>
-      <div id="conceptPanel"></div>
-    </div>
-
-    <!-- ══ PANEL: ELI5 MODE ══ -->
-    <div id="panel-eli5" class="panel">
-      <div class="panel-title-row">
-        <h2>Explain Like I'm Five</h2>
-        <div class="panel-sub">Complex UPSC concepts · Simple analogies · Never forget again</div>
-      </div>
-      <div id="eli5Panel"></div>
-    </div>
-  </main>
-
-  <!-- MOBILE BOTTOM NAV -->
-  <nav class="bottom-nav">
-    <button class="bn-btn active" data-panel="home"       onclick="App.goto('home')">       <span>⬡</span> Home       </button>
-    <button class="bn-btn"        data-panel="diagnostic" onclick="App.goto('diagnostic')"> <span>🧬</span> Diagnose   </button>
-    <button class="bn-btn"        data-panel="ncert"      onclick="App.goto('ncert')">      <span>📖</span> Learn      </button>
-    <button class="bn-btn"        data-panel="graph"      onclick="App.goto('graph')">      <span>🕸</span> Graph      </button>
-    <button class="bn-btn"        data-panel="options_ml" onclick="App.goto('options_ml')"> <span>🔢</span> ML         </button>
+    <div class="nav-section-label">PRACTICE</div>
+    <button class="nav-btn" onclick="navigate('mock')" data-panel="mock">
+      <span class="nav-icon">🏆</span><span class="nav-label">Adaptive Mock</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('mains')" data-panel="mains">
+      <span class="nav-icon">🖊️</span><span class="nav-label">Mains Trainer</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('schemes')" data-panel="schemes">
+      <span class="nav-icon">📋</span><span class="nav-label">Scheme Tracker</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('plan')" data-panel="plan">
+      <span class="nav-icon">🗓️</span><span class="nav-label">Study Plan</span>
+    </button>
   </nav>
 
-  <!-- DRAWER OVERLAY (mobile) -->
-  <div id="drawer-overlay" onclick="App.toggleDrawer()" style="display:none"></div>
-</div>
+  <!-- ── MOBILE NAV BAR ──────────────────────── -->
+  <nav id="mobileNav">
+    <button class="mnav-btn active" onclick="navigate('home')" data-panel="home">
+      <span>🏠</span><span>Home</span>
+    </button>
+    <button class="mnav-btn" onclick="navigate('quiz')" data-panel="quiz">
+      <span>⚡</span><span>Quiz</span>
+    </button>
+    <button class="mnav-btn" onclick="navigate('ncert')" data-panel="ncert">
+      <span>📚</span><span>Learn</span>
+    </button>
+    <button class="mnav-btn" onclick="navigate('graph')" data-panel="graph">
+      <span>🌌</span><span>Galaxy</span>
+    </button>
+    <button class="mnav-btn" onclick="toggleMoreMenu()" id="moreBtn">
+      <span>⋯</span><span>More</span>
+    </button>
+  </nav>
 
-<!-- XP TOAST -->
-<div class="xp-toast" id="xpToast"></div>
+  <!-- ── MORE MENU (MOBILE) ─────────────────── -->
+  <div id="moreMenu" style="display:none">
+    <div class="more-menu-overlay" onclick="toggleMoreMenu()"></div>
+    <div class="more-menu-panel">
+      <div class="more-menu-grid">
+        <button onclick="navigate('diagnostic');toggleMoreMenu()">🧬 Diagnostic</button>
+        <button onclick="navigate('affairs');toggleMoreMenu()">📡 Affairs</button>
+        <button onclick="navigate('revision');toggleMoreMenu()">🔁 Revision</button>
+        <button onclick="navigate('performance');toggleMoreMenu()">📊 Analytics</button>
+        <button onclick="navigate('concept');toggleMoreMenu()">💡 Concepts</button>
+        <button onclick="navigate('debate');toggleMoreMenu()">⚔️ Debate</button>
+        <button onclick="navigate('essay');toggleMoreMenu()">✍️ Essay</button>
+        <button onclick="navigate('pattern');toggleMoreMenu()">🎯 PYQ Pattern</button>
+        <button onclick="navigate('cluster');toggleMoreMenu()">🔗 Clusters</button>
+        <button onclick="navigate('pyqlineage');toggleMoreMenu()">📈 PYQ Lineage</button>
+        <button onclick="navigate('timeline');toggleMoreMenu()">🕐 Timeline</button>
+        <button onclick="navigate('mock');toggleMoreMenu()">🏆 Mock Test</button>
+        <button onclick="navigate('mains');toggleMoreMenu()">🖊️ Mains</button>
+        <button onclick="navigate('schemes');toggleMoreMenu()">📋 Schemes</button>
+        <button onclick="navigate('plan');toggleMoreMenu()">🗓️ Study Plan</button>
+      </div>
+    </div>
+  </div>
 
+  <!-- ══════════════════════════════════════════ -->
+  <!--  MAIN CONTENT AREA                         -->
+  <!-- ══════════════════════════════════════════ -->
+  <main id="mainContent">
+
+    <!-- XP TOAST -->
+    <div id="xpToast" class="xp-toast" style="display:none"></div>
+
+    <!-- ─────────────────────────────────────── -->
+    <!-- PANEL: HOME / MISSION CONTROL           -->
+    <!-- ─────────────────────────────────────── -->
+    <div id="panel-home" class="panel active">
+      <div class="panel-header">
+        <h1 id="greetingText">Good morning, Commander.</h1>
+        <div class="panel-subtitle" id="missionDate"></div>
+      </div>
+
+      <!-- Streak + XP bar -->
+      <div class="mission-stats-row">
+        <div class="stat-pill"><span class="sp-icon">🔥</span><span id="streakCount">0</span><span class="sp-label">day streak</span></div>
+        <div class="stat-pill"><span class="sp-icon">⚡</span><span id="xpCount">0</span><span class="sp-label">XP</span></div>
+        <div class="stat-pill"><span class="sp-icon">🧠</span><span id="knowledgeIndexDisplay">0%</span><span class="sp-label">knowledge</span></div>
+      </div>
+
+      <!-- Daily Mission -->
+      <div class="section-card mission-card">
+        <div class="sc-title">🚀 DAILY MISSION</div>
+        <div id="missionGrid" class="mission-grid"></div>
+      </div>
+
+      <!-- Habit Loop -->
+      <div class="section-card">
+        <div class="sc-title">⏰ HABIT LOOP</div>
+        <div class="habit-grid" id="habitLoop">
+          <div class="habit-item" id="h-morning">
+            <div class="hi-icon">☀️</div>
+            <div class="hi-label">Morning<br><small>Concept + Quiz</small></div>
+            <div class="hi-check"></div>
+          </div>
+          <div class="habit-item" id="h-afternoon">
+            <div class="hi-icon">📖</div>
+            <div class="hi-label">Afternoon<br><small>NCERT + Current Affairs</small></div>
+            <div class="hi-check"></div>
+          </div>
+          <div class="habit-item" id="h-evening">
+            <div class="hi-icon">🌙</div>
+            <div class="hi-label">Evening<br><small>Revision + Essay</small></div>
+            <div class="hi-check"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Knowledge Radar -->
+      <div class="section-card">
+        <div class="sc-title">🕸️ MASTERY RADAR</div>
+        <canvas id="radarCanvas" width="280" height="280" style="display:block;margin:0 auto"></canvas>
+      </div>
+
+      <!-- Weak Zones Alert -->
+      <div class="section-card" id="weakZoneCard" style="display:none">
+        <div class="sc-title" style="color:var(--red)">⚠️ WEAK ZONES</div>
+        <div id="weakZoneList"></div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="section-card">
+        <div class="sc-title">⚡ QUICK LAUNCH</div>
+        <div class="quick-actions-grid">
+          <button class="qa-btn" onclick="navigate('quiz');QUIZ.start('adaptive')">🎯 Adaptive Quiz</button>
+          <button class="qa-btn" onclick="navigate('affairs');AFFAIRS.render()">📡 Affairs</button>
+          <button class="qa-btn" onclick="navigate('revision');REVISION.render()">🔁 Revise Now</button>
+          <button class="qa-btn" onclick="navigate('mock');MOCK.render()">🏆 Mock Test</button>
+          <button class="qa-btn" onclick="navigate('cluster')">🔗 Clusters</button>
+          <button class="qa-btn" onclick="navigate('mains')">🖊️ Mains</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────── -->
+    <!-- PANEL: DIAGNOSTIC                       -->
+    <!-- ─────────────────────────────────────── -->
+    <div id="panel-diagnostic" class="panel">
+      <div class="panel-header">
+        <h1>🧬 Diagnostic Scan</h1>
+        <div class="panel-subtitle">Calibrate your knowledge baseline</div>
+      </div>
+      <div id="diagIntro" class="section-card">
+        <p style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:20px">
+          Answer 20 calibration questions across all 8 subjects. This maps your knowledge galaxy and builds your personalized study plan.
+        </p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn-primary" onclick="DIAGNOSTIC.start()">Begin Scan →</button>
+          <button class="btn-secondary" onclick="navigate('plan')">View Study Plan</button>
+        </div>
+      </div>
+      <div id="diagQuestion" style="display:none"></div>
+      <div id="diagResults" style="display:none"></div>
+    </div>
+
+    <!-- ─────────────────────────────────────── -->
+    <!-- PANEL: QUIZ                             -->
+    <!-- ─────────────────────────────────────── -->
+    <div id="panel-quiz" class="panel">
+      <div class="panel-header">
+        <h1>⚡ Practice Quiz</h1>
+        <div class="panel-subtitle">Choose your battle mode</div>
+      </div>
+
+      <div id="quizModeSelect">
+        <div id="subjectSelectArea" style="display:none">
+          <div class="sc-title" style="margin-bottom:12px">SELECT SUBJECT</div>
+          <div id="quizSubjectChips" class="subject-chips"></div>
+        </div>
+        <div class="quiz-modes-grid">
+          <div class="qm-card" onclick="QUIZ.start('adaptive')">
+            <div class="qm-icon">🎯</div>
+            <div class="qm-name">Adaptive</div>
+            <div class="qm-desc">AI targets your weak nodes</div>
+          </div>
+          <div class="qm-card" onclick="QUIZ.start('subject')">
+            <div class="qm-icon">📚</div>
+            <div class="qm-name">By Subject</div>
+            <div class="qm-desc">Pick a subject to drill</div>
+          </div>
+          <div class="qm-card" onclick="QUIZ.start('timed')">
+            <div class="qm-icon">⏱</div>
+            <div class="qm-name">Timed Sprint</div>
+            <div class="qm-desc">20Q in 10 minutes</div>
+          </div>
+          <div class="qm-card" onclick="QUIZ.start('full_prelims')">
+            <div class="qm-icon">🏆</div>
+            <div class="qm-name">Prelims Sim</div>
+            <div class="qm-desc">100Q · 120 min · −⅓</div>
+          </div>
+          <div class="qm-card" onclick="QUIZ.start('current_affairs')">
+            <div class="qm-icon">📡</div>
+            <div class="qm-name">Current Affairs</div>
+            <div class="qm-desc">News → MCQ</div>
+          </div>
+          <div class="qm-card" onclick="QUIZ.start('weak_assault')">
+            <div class="qm-icon">⚔️</div>
+            <div class="qm-name">Weak Assault</div>
+            <div class="qm-desc">Only your worst nodes</div>
+          </div>
+          <div class="qm-card" onclick="QUIZ.start('concept_cluster')">
+            <div class="qm-icon">🔗</div>
+            <div class="qm-name">Cluster Quiz</div>
+            <div class="qm-desc">Cross-topic connections</div>
+          </div>
+          <div class="qm-card" onclick="QUIZ.start('speed_drill')">
+            <div class="qm-icon">⚡</div>
+            <div class="qm-name">Speed Drill</div>
+            <div class="qm-desc">20Q in 10 min · rapid fire</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="quizActive" style="display:none"></div>
+    </div>
+
+    <!-- ─────────────────────────────────────── -->
+    <!-- PANEL: NCERT                            -->
+    <!-- ─────────────────────────────────────── -->
+    <div id="panel-ncert" class="panel">
+      <div class="panel-header">
+        <h1>📚 NCERT Cosmos</h1>
+        <div class="panel-subtitle">Structured conceptual learning</div>
+      </div>
+      <div id="ncertModuleList"></div>
+      <div id="ncertLesson" style="display:none">
+        <button class="back-btn" onclick="NCERT.backToList()">← All Modules</button>
+        <div id="lessonDots" class="lesson-progress-dots"></div>
+        <div id="lessonContent"></div>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────── -->
+    <!-- PANEL: KNOWLEDGE GALAXY                 -->
+    <!-- ─────────────────────────────────────── -->
+    <div id="panel-graph" class="panel">
+      <div class="panel-header">
+        <h1>🌌 Knowledge Galaxy</h1>
+        <div class="panel-subtitle">Navigate your concept universe</div>
+      </div>
+      <div id="graphFilters" class="filter-chips-row"></div>
+      <div class="graph-canvas-wrap">
+        <canvas id="graphCanvas"></canvas>
+      </div>
+      <div id="nodeDetail" class="node-detail-card" style="display:none"></div>
+      <div id="connectionPanel" style="display:none">
+        <div class="sc-title">🔗 CONCEPT CONNECTIONS</div>
+        <div id="connectionList"></div>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────── -->
+    <!-- PANEL: CURRENT AFFAIRS                  -->
+    <!-- ─────────────────────────────────────── -->
+    <div id="panel-affairs" class="panel">
+      <div class="panel-header">
+        <h1>📡 Current Affairs</h1>
+        <div class="panel-subtitle">News → Concept → Exam</div>
+      </div>
+      <div id="affairsPanel"></div>
+    </div>
+
+    <!-- ─────────────────────────────────────── -->
+    <!-- PANEL: PYQ PATTERN                      -->
+    <!-- ─────────────────────────────────────── -->
+    <div id="panel-pattern" class="panel">
+      <div class="panel-header">
+        <h1>🎯 PYQ Pattern Analyzer</h1>
+        <div class="panel-subtitle">25-year topic frequency intelligence</div>
+      </div>
+      <div id="patternPanel"></div>
+    </div>
+
+    <!-- ─────────────────────────────────────── -->
+    <!-- PANEL: CONCEPT ENGINE                   -->
+    <!-- ─────────────────────────────────────── -->
+    <div id="panel-concept" class="panel">
+      <div class="panel-header">
+        <h1>💡 Concept Engine</h1>
+        <div class="panel-subtitle">One concept. Understood deeply.</div>
+      </div>
+      <div id="conceptGrid" class="concept-grid"></div>
+    </div>
+
+    <!-- ─────────────────────────────────────── -->
+    <!-- PANEL: DEBATE MODE                      -->
+    <!-- ─────────────────────────────────────── -->
+    <div id="panel-debate" class="panel">
+      <div class="panel-header">
+        <h1>⚔️ Debate Mode</h1>
+        <div class="panel-subtitle">Steel-man every argument</div>
+      </div>
+      <div id="debateList"></div>
+      <div id="debateActive" style="display:none"></div>
+    </div>
+
+    <!-- ─────────────────────────────────────── -->
+    <!-- PANEL: ESSAY STUDIO                     -->
+    <!-- ─────────────────────────────────────── -->
+    <div id="panel-essay" class="panel">
+      <div class="panel-header">
+        <h1>✍️ Essay Studio</h1>
+        <div class="panel-subtitle">Write · Structure · Evaluate</div>
+      </div>
+      <div id="essayTopicList"></div>
+      <div id="essayEditor" style="display:none">
+        <button class="back-btn" onclick="ESSAY.backToList()">← Topics</button>
+        <div class="essay-active">
+          <div id="essayTopicTitle" class="essay-title"></div>
+          <div class="essay-keywords" id="essayKeywords"></div>
+          <div class="framework-steps" id="frameworkSteps"></div>
+          <div class="word-count-bar">
+            <span>Words: <strong id="wordCount">0</strong></span>
+            <span style="color:var(--text3)">Target: 1000–1200</span>
+          </div>
+          <textarea id="essayTextarea" class="essay-textarea" placeholder="Begin your essay here. Structure: Introduction → Body (multiple arguments) → Conclusion. Use the framework above as your guide..."></textarea>
+          <button class="btn-primary" style="width:100%;margin-top:12px" onclick="ESSAY.evaluate()">Evaluate Essay →</button>
+          <div id="essayFeedback" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────── -->
+    <!-- PANEL: STUDY PLAN                       -->
+    <!-- ─────────────────────────────────────── -->
+    <div id="panel-plan" class="panel">
+      <div class="panel-header">
+        <h1>🗓️ Study Plan</h1>
+        <div class="panel-subtitle">Your personalized mission roadmap</div>
+      </div>
+      <div id="planContent"></div>
+    </div>
+
+    <!-- ─────────────────────────────────────── -->
+    <!-- PANEL: REVISION ENGINE                  -->
+    <!-- ─────────────────────────────────────── -->
+    <div id="panel-revision" class="panel">
+      <div class="panel-header">
+        <h1>🔁 Revision Engine</h1>
+        <div class="panel-subtitle">Spaced repetition · Forget-proof</div>
+      </div>
+      <div id="revisionDue"></div>
+      <div id="revisionFlashcards" style="display:none"></div>
+    </div>
+
+    <!-- ─────────────────────────────────────── -->
+    <!-- PANEL: SCHEME TRACKER                   -->
+    <!-- ─────────────────────────────────────── -->
+    <div id="panel-schemes" class="panel">
+      <div class="panel-header">
+        <h1>📋 Scheme Tracker</h1>
+        <div class="panel-subtitle">All government schemes mapped</div>
+      </div>
+      <input class="search-input" placeholder="Search schemes..." oninput="SCHEMES.search(this.value)"/>
+      <div class="scheme-filter-tabs">
+        <button class="tab-btn active" onclick="SCHEMES.filter('all')">All</button>
+        <button class="tab-btn" onclick="SCHEMES.filter('Polity')">Polity</button>
+        <button class="tab-btn" onclick="SCHEMES.filter('Economy')">Economy</button>
+        <button class="tab-btn" onclick="SCHEMES.filter('Governance')">Governance</button>
+        <button class="tab-btn" onclick="SCHEMES.filter('Environment')">Environment</button>
+      </div>
+      <div id="schemeCards"></div>
+    </div>
+
+    <!-- ─────────────────────────────────────── -->
+    <!-- PANEL: PERFORMANCE                      -->
+    <!-- ─────────────────────────────────────── -->
+    <div id="panel-performance" class="panel">
+      <div class="panel-header">
+        <h1>📊 Analytics</h1>
+        <div class="panel-subtitle">Mission intelligence dashboard</div>
+      </div>
+      <div id="performanceContent"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- 5 NEW COUNCIL FEATURE PANELS            -->
+    <!-- ═══════════════════════════════════════ -->
+
+    <!-- ─────────────────────────────────────── -->
+    <!-- PANEL: CONCEPT CLUSTER EXPLORER         -->
+    <!-- ─────────────────────────────────────── -->
+    <div id="panel-cluster" class="panel">
+      <div class="panel-header">
+        <h1>🔗 Concept Clusters</h1>
+        <div class="panel-subtitle">How UPSC connects topics across subjects</div>
+      </div>
+      <div id="clusterGrid"></div>
+      <div id="clusterDetail" style="display:none">
+        <button class="back-btn" onclick="CLUSTER.backToGrid()">← All Clusters</button>
+        <div id="clusterDetailContent"></div>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────── -->
+    <!-- PANEL: PYQ LINEAGE TRACKER              -->
+    <!-- ─────────────────────────────────────── -->
+    <div id="panel-pyqlineage" class="panel">
+      <div class="panel-header">
+        <h1>📈 PYQ Lineage Tracker</h1>
+        <div class="panel-subtitle">How concepts evolved through 25 years of UPSC</div>
+      </div>
+      <div id="pyqLineageList"></div>
+      <div id="pyqLineageDetail" style="display:none">
+        <button class="back-btn" onclick="PYQLINEAGE.backToList()">← All Concepts</button>
+        <div id="pyqLineageDetailContent"></div>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────── -->
+    <!-- PANEL: POLICY TIMELINE                  -->
+    <!-- ─────────────────────────────────────── -->
+    <div id="panel-timeline" class="panel">
+      <div class="panel-header">
+        <h1>🕐 Policy Timeline</h1>
+        <div class="panel-subtitle">Major policies visualized chronologically</div>
+      </div>
+      <div id="timelineSelector" class="timeline-selector"></div>
+      <div id="timelineContent"></div>
+    </div>
+
+    <!-- ─────────────────────────────────────── -->
+    <!-- PANEL: ADAPTIVE MOCK GENERATOR          -->
+    <!-- ─────────────────────────────────────── -->
+    <div id="panel-mock" class="panel">
+      <div class="panel-header">
+        <h1>🏆 Adaptive Mock Generator</h1>
+        <div class="panel-subtitle">AI-built tests based on your weak zones + high-probability topics</div>
+      </div>
+      <div id="mockConfigs"></div>
+      <div id="mockActive" style="display:none"></div>
+    </div>
+
+    <!-- ─────────────────────────────────────── -->
+    <!-- PANEL: MAINS THINKING TRAINER           -->
+    <!-- ─────────────────────────────────────── -->
+    <div id="panel-mains" class="panel">
+      <div class="panel-header">
+        <h1>🖊️ Mains Thinking Trainer</h1>
+        <div class="panel-subtitle">Structured answer writing · Keyword scoring · Model answers</div>
+      </div>
+      <div id="mainsQuestionList"></div>
+      <div id="mainsEditor" style="display:none">
+        <button class="back-btn" onclick="MAINS.backToList()">← All Questions</button>
+        <div id="mainsEditorContent"></div>
+      </div>
+    </div>
+
+  </main><!-- /mainContent -->
+</div><!-- /app -->
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  SCRIPTS — ORDER MATTERS                    -->
+<!-- ═══════════════════════════════════════════ -->
 <script src="data/core.js"></script>
+<script src="data/extra.js"></script>
+<script src="data/questions.js"></script>
 <script src="js/app.js"></script>
 <script src="js/diagnostic.js"></script>
+<script src="js/quiz.js"></script>
 <script src="js/ncert.js"></script>
 <script src="js/graph.js"></script>
-<script src="js/quiz.js"></script>
-<script src="js/options-ml.js"></script>
 <script src="js/panels.js"></script>
+<script src="js/features.js"></script>
+
+<script>
+// ── Boot sequence ──────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  initApp();
+  NCERT.renderList();
+  GRAPH.init();
+  AFFAIRS.render();
+  PATTERN.render();
+  CONCEPTS.render();
+  DEBATE.renderList();
+  ESSAY.renderList();
+  PLAN.render();
+  REVISION.render();
+  SCHEMES.render();
+  PERFORMANCE.render();
+  CLUSTER.render();
+  PYQLINEAGE.render();
+  TIMELINE.render();
+  MOCK.render();
+  MAINS.render();
+});
+
+function toggleMoreMenu() {
+  const m = document.getElementById('moreMenu');
+  m.style.display = m.style.display === 'none' ? 'flex' : 'none';
+}
+</script>
+
 </body>
 </html>
