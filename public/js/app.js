@@ -1,328 +1,490 @@
-// ══════════════════════════════════════════════════════
-//  LEARNING ORGANISM — CORE APP ENGINE
-// ══════════════════════════════════════════════════════
+/* ╔══════════════════════════════════════════╗
+   ║  UPSC COSMOS v6 — app.js                 ║
+   ║  Core: STATE, Navigation, Mission Control ║
+   ╚══════════════════════════════════════════╝ */
 
-// ── STATE ──
-const STATE = {
+/* ═══ CONSTANTS ═══ */
+const RANKS = [
+  {min:0,    label:'Aspirant'},
+  {min:100,  label:'Curious Mind'},
+  {min:300,  label:'Serious Candidate'},
+  {min:700,  label:'District Topper'},
+  {min:1500, label:'IPS Contender'},
+  {min:3000, label:'IAS Contender'},
+  {min:6000, label:'Topper Territory'},
+];
+
+const XP_REWARDS = {
+  diag_correct: 8, diag_complete: 50,
+  ncert_correct: 10, ncert_module: 50,
+  quiz_correct: 10, quiz_complete: 20,
+  concept_day: 15, revision: 25,
+  essay_submit: 30, interview_answer: 20,
+  streak_bonus: 10,
+};
+
+/* ═══ STATE ═══ */
+let STATE = {
   currentPanel: 'home',
   userName: '',
   diagnosed: false,
   xp: 0,
   streak: 0,
   lastStudied: null,
-  // Knowledge mastery scores: nodeId → 0–100
   mastery: {},
-  // Study history: array of {date, nodeId, correct, total}
   history: [],
-  // Diagnostic results
   diagResult: null,
+  seenQuestions: [],
+  revisionQueue: [],
+  habitLoop: { morningDone: false, afternoonDone: false, eveningDone: false },
+  mode: 'foundation',
+  focusMode: false,
+  knowledgeIndex: {},
+  notes: {},
+  currentAffairsRead: [],
+  conceptsTodayDone: false,
+  lastResetDay: null,
 };
 
-// ── RANKS ──
-const RANKS = [
-  { min:0,    label:'Aspirant',          color:'#888' },
-  { min:100,  label:'Curious Mind',      color:'#06b6d4' },
-  { min:300,  label:'Serious Candidate', color:'#22c55e' },
-  { min:700,  label:'District Topper',   color:'#f59e0b' },
-  { min:1500, label:'IPS Contender',     color:'#a855f7' },
-  { min:3000, label:'IAS Contender',     color:'#ef4444' },
-  { min:6000, label:'Topper Territory',  color:'#7c6af7' },
-];
-
-function getRank(xp) {
-  for (let i = RANKS.length - 1; i >= 0; i--) {
-    if (xp >= RANKS[i].min) return RANKS[i];
+/* ═══ LOAD/SAVE STATE ═══ */
+function loadState() {
+  try {
+    const saved = localStorage.getItem('cosmos_state');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      STATE = { ...STATE, ...parsed };
+      STATE.seenQuestions = Array.isArray(STATE.seenQuestions) ? STATE.seenQuestions : [];
+    }
+  } catch(e) {}
+  // Daily reset habit loop
+  const today = new Date().toDateString();
+  if (STATE.lastResetDay !== today) {
+    STATE.habitLoop = { morningDone: false, afternoonDone: false, eveningDone: false };
+    STATE.conceptsTodayDone = false;
+    STATE.lastResetDay = today;
   }
-  return RANKS[0];
+  // Streak logic
+  if (STATE.lastStudied) {
+    const last = new Date(STATE.lastStudied);
+    const now  = new Date();
+    const diffDays = Math.floor((now - last) / 86400000);
+    if (diffDays > 1) STATE.streak = 0;
+  }
 }
 
-function getNextRank(xp) {
-  for (let r of RANKS) { if (xp < r.min) return r; }
-  return null;
+function saveState() {
+  try { localStorage.setItem('cosmos_state', JSON.stringify(STATE)); } catch(e) {}
 }
 
-// ── PERSISTENCE ──
-function save() {
-  try {
-    localStorage.setItem('lo_state', JSON.stringify({
-      userName: STATE.userName, diagnosed: STATE.diagnosed,
-      xp: STATE.xp, streak: STATE.streak, lastStudied: STATE.lastStudied,
-      mastery: STATE.mastery, history: STATE.history.slice(-200),
-      diagResult: STATE.diagResult,
-    }));
-  } catch(e) {}
+/* ═══ XP ENGINE ═══ */
+function addXP(amount, label) {
+  STATE.xp += amount;
+  updateXPDisplay();
+  showXPToast(`+${amount} XP — ${label}`);
+  touchStreak();
+  saveState();
 }
 
-function load() {
-  try {
-    const s = JSON.parse(localStorage.getItem('lo_state') || '{}');
-    Object.assign(STATE, s);
-  } catch(e) {}
+function updateXPDisplay() {
+  const el = document.getElementById('xpDisplay');
+  if (el) el.textContent = `${STATE.xp} XP`;
+  const rank = getCurrentRank();
+  const rankEl = document.getElementById('rankBadge');
+  if (rankEl) rankEl.textContent = rank;
 }
 
-function addXP(n, reason) {
-  STATE.xp += n;
-  save();
-  updateXPUI();
-  showXPToast(`+${n} XP — ${reason}`);
-}
-
-function setMastery(nodeId, score) {
-  STATE.mastery[nodeId] = Math.max(0, Math.min(100, score));
-  save();
-}
-
-function getMastery(nodeId) {
-  return STATE.mastery[nodeId] || 0;
-}
-
-// ── XP UI ──
-function updateXPUI() {
-  const rank = getRank(STATE.xp);
-  const next = getNextRank(STATE.xp);
-  const pct = next ? ((STATE.xp - rank.min) / (next.min - rank.min) * 100) : 100;
-  const els = {
-    sbRank: document.getElementById('sbRank'),
-    sbXpBar: document.getElementById('sbXpBar'),
-    sbXpVal: document.getElementById('sbXpVal'),
-    topbarXP: document.getElementById('topbarXP'),
-  };
-  if (els.sbRank) { els.sbRank.textContent = rank.label; els.sbRank.style.color = rank.color; }
-  if (els.sbXpBar) els.sbXpBar.style.width = pct + '%';
-  if (els.sbXpVal) els.sbXpVal.textContent = STATE.xp + ' XP';
-  if (els.topbarXP) els.topbarXP.textContent = STATE.xp + ' XP';
+function getCurrentRank() {
+  let rank = RANKS[0].label;
+  for (const r of RANKS) { if (STATE.xp >= r.min) rank = r.label; }
+  return rank;
 }
 
 function showXPToast(msg) {
   const t = document.getElementById('xpToast');
   if (!t) return;
   t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.classList.remove('show'), 2400);
+  t.style.display = 'block';
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => { t.style.display = 'none'; }, 2200);
 }
 
-// ── SUBJECT COLOR HELPER ──
-function subjectColor(s) {
-  return { 'Polity':'#7c6af7','Economy':'#22c55e','Environment':'#10b981',
-    'History':'#f59e0b','Geography':'#06b6d4','Sci & Tech':'#a855f7',
-    'Governance':'#f97316','Int. Relations':'#3b82f6' }[s] || '#888';
-}
-
-function subjectClass(s) {
-  return { 'Polity':'tag-polity','Economy':'tag-economy','Environment':'tag-environment',
-    'History':'tag-history','Geography':'tag-geography','Sci & Tech':'tag-sci_tech',
-    'Governance':'tag-governance','Int. Relations':'tag-ir' }[s] || '';
-}
-
-// ── NAVIGATION ──
-const App = {
-  goto(panel) {
-    STATE.currentPanel = panel;
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    const el = document.getElementById('panel-' + panel);
-    if (el) el.classList.add('active');
-
-    document.querySelectorAll('.sb-btn').forEach(b => b.classList.toggle('active', b.dataset.panel === panel));
-    document.querySelectorAll('.bn-btn').forEach(b => b.classList.toggle('active', b.dataset.panel === panel));
-
-    const titles = { home:'Dashboard', diagnostic:'Diagnostic', ncert:'NCERT Learn',
-      graph:'Knowledge Map', quiz:'Daily Quiz', debate:'Debate Mode',
-      options_ml:'Option ML', plan:'Study Plan', concept:'Concept/Day', eli5:'ELI5 Mode' };
-    const tb = document.getElementById('topbarTitle');
-    if (tb) tb.textContent = titles[panel] || panel;
-
-    // Close drawer on mobile
-    document.getElementById('sidebar')?.classList.remove('open');
-    document.getElementById('drawer-overlay').style.display = 'none';
-
-    // Init each panel
-    if (panel === 'home') Home.render();
-    if (panel === 'ncert') NCERT.renderHome();
-    if (panel === 'graph') KnowledgeGraph.render();
-    if (panel === 'quiz') Quiz.renderHome();
-    if (panel === 'debate') renderDebateMode();
-    if (panel === 'options_ml') OptionsML.render();
-    if (panel === 'plan') StudyPlan.render();
-    if (panel === 'concept') ConceptDay.render();
-    if (panel === 'eli5') ELI5.render();
-  },
-
-  toggleDrawer() {
-    const sb = document.getElementById('sidebar');
-    const ov = document.getElementById('drawer-overlay');
-    const open = sb.classList.toggle('open');
-    ov.style.display = open ? 'block' : 'none';
-  },
-};
-
-// ── SPLASH + BOOT ──
-window.addEventListener('DOMContentLoaded', () => {
-  load();
-  updateStreak();
-
-  const bar = document.getElementById('splashBar');
-  const cap = document.getElementById('splashCaption');
-  const captions = ['Initialising knowledge graph…','Loading NCERT modules…','Calibrating adaptive engine…','Mapping your learning nodes…','Ready.'];
-  let pct = 0;
-  const tick = setInterval(() => {
-    pct = Math.min(100, pct + Math.random() * 22 + 6);
-    if (bar) bar.style.width = pct + '%';
-    const ci = Math.floor((pct / 100) * (captions.length - 1));
-    if (cap) cap.textContent = captions[Math.min(ci, captions.length - 1)];
-    if (pct >= 100) {
-      clearInterval(tick);
-      setTimeout(boot, 400);
-    }
-  }, 180);
-});
-
-function updateStreak() {
+function touchStreak() {
   const today = new Date().toDateString();
-  const yesterday = new Date(Date.now() - 86400000).toDateString();
-  if (STATE.lastStudied === today) return;
-  if (STATE.lastStudied === yesterday) STATE.streak++;
-  else if (STATE.lastStudied !== today) STATE.streak = 1;
-  STATE.lastStudied = today;
-  save();
-}
-
-function boot() {
-  const splash = document.getElementById('splash');
-  const app = document.getElementById('app');
-  if (splash) { splash.classList.add('out'); setTimeout(() => splash.remove(), 600); }
-  if (app) app.style.display = 'flex';
-
-  updateXPUI();
-  App.goto('home');
-
-  // Register service worker
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+  if (STATE.lastStudied !== today) {
+    if (STATE.lastStudied === new Date(Date.now()-86400000).toDateString()) STATE.streak++;
+    else if (!STATE.lastStudied) STATE.streak = 1;
+    STATE.lastStudied = today;
+    document.getElementById('streakDisplay').textContent = `${STATE.streak}🔥`;
   }
 }
 
-// ══ HOME PANEL ══
-const Home = {
-  render() {
-    this.renderGreeting();
-    this.renderConceptOfDay();
-    this.renderHeatmap();
-    this.renderAgenda();
-    this.renderWeekRings();
-    this.renderStreakCal();
-    this.renderWeakAlert();
-  },
+/* ═══ NAVIGATION ═══ */
+function navigate(panel) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const el = document.getElementById(`panel-${panel}`);
+  if (el) el.classList.add('active');
+  const nav = document.getElementById(`nav-${panel}`);
+  if (nav) nav.classList.add('active');
+  STATE.currentPanel = panel;
+  saveState();
+  // Render panel-specific content
+  const renders = {
+    home: renderMission,
+    diagnostic: () => {},
+    ncert: () => typeof NCERT !== 'undefined' && NCERT.renderList(),
+    graph: () => typeof GRAPH !== 'undefined' && GRAPH.init(),
+    quiz: () => typeof QUIZ !== 'undefined' && QUIZ.renderModes(),
+    affairs: () => typeof AFFAIRS !== 'undefined' && AFFAIRS.render(),
+    pattern: () => typeof PATTERN !== 'undefined' && PATTERN.render(),
+    concept: () => typeof CONCEPTS !== 'undefined' && CONCEPTS.render(),
+    debate: () => typeof DEBATE !== 'undefined' && DEBATE.renderList(),
+    essay: () => typeof ESSAY !== 'undefined' && ESSAY.renderList(),
+    plan: () => typeof PLAN !== 'undefined' && PLAN.render(),
+    revision: () => typeof REVISION !== 'undefined' && REVISION.render(),
+    schemes: () => typeof SCHEMES !== 'undefined' && SCHEMES.render(),
+    performance: () => typeof PERFORMANCE !== 'undefined' && PERFORMANCE.render(),
+  };
+  if (renders[panel]) renders[panel]();
+  window.scrollTo(0, 0);
+}
 
-  renderGreeting() {
-    const h = new Date().getHours();
-    const greeting = h < 5 ? 'Late night grind.' : h < 12 ? 'Good morning.' : h < 17 ? 'Good afternoon.' : h < 21 ? 'Good evening.' : 'Night session.';
-    const el = document.getElementById('heroGreeting');
-    if (el) el.textContent = STATE.userName ? `${greeting} ${STATE.userName}.` : greeting;
-    const sc = document.getElementById('streakCount');
-    if (sc) sc.textContent = STATE.streak;
-  },
+function toggleMore() {
+  const m = document.getElementById('moreMenu');
+  m.style.display = m.style.display === 'none' ? 'block' : 'none';
+}
 
-  renderConceptOfDay() {
-    const dayIdx = Math.floor(Date.now() / 86400000) % CONCEPT_OF_DAY.length;
-    const cod = CONCEPT_OF_DAY[dayIdx];
-    document.getElementById('codTitle').textContent = cod.concept;
-    document.getElementById('codSubject').textContent = cod.subject;
-    document.getElementById('codSubject').className = 'hg-cod-subject ' + subjectClass(cod.subject);
-    document.getElementById('codExplain').textContent = cod.explain.slice(0, 180) + '…';
-    document.getElementById('codEli5').textContent = '🧒 ' + cod.eli5;
-  },
+function switchMode(mode) {
+  STATE.mode = mode;
+  document.getElementById('btnFoundation').classList.toggle('active', mode === 'foundation');
+  document.getElementById('btnExam').classList.toggle('active', mode === 'exam');
+  saveState();
+}
 
-  renderHeatmap() {
-    const subjects = ['Polity','Economy','Environment','History','Sci & Tech','Governance','Int. Relations'];
-    const el = document.getElementById('quickHeatmap');
-    if (!el) return;
-    el.innerHTML = subjects.map(s => {
-      const nodes = KNOWLEDGE_GRAPH.nodes.filter(n => n.subject === s);
-      const avg = nodes.length ? Math.round(nodes.reduce((sum, n) => sum + getMastery(n.id), 0) / nodes.length) : 0;
-      const color = subjectColor(s);
-      return `<div class="hm-subj-row">
-        <div class="hm-subj-label">${s.replace('Int. Relations','IR')}</div>
-        <div class="hm-bar-wrap"><div class="hm-bar" style="width:${avg}%;background:${color}" ></div></div>
-        <div class="hm-pct">${avg}%</div>
-      </div>`;
-    }).join('');
-    setTimeout(() => {
-      el.querySelectorAll('.hm-bar').forEach(b => { const w = b.style.width; b.style.width='0%'; setTimeout(()=>b.style.width=w,50); });
-    }, 100);
-  },
+/* ═══ MASTERY HELPERS ═══ */
+function getMastery(nodeId) { return STATE.mastery[nodeId] || 0; }
+function setMastery(nodeId, val) {
+  STATE.mastery[nodeId] = Math.min(100, Math.max(0, val));
+  saveState();
+}
+function updateMasteryFromAnswer(nodeId, correct) {
+  const current = getMastery(nodeId);
+  const delta = correct ? 8 : -4;
+  setMastery(nodeId, current + delta);
+}
 
-  renderAgenda() {
-    const el = document.getElementById('todayAgenda');
-    if (!el) return;
-    const weakNodes = KNOWLEDGE_GRAPH.nodes
-      .filter(n => getMastery(n.id) < 40)
-      .sort((a,b) => getMastery(a.id) - getMastery(b.id))
-      .slice(0, 4);
-    const items = [
-      { icon:'💡', text:'Concept of the Day: ' + CONCEPT_OF_DAY[Math.floor(Date.now()/86400000)%CONCEPT_OF_DAY.length].concept },
-      ...weakNodes.map(n => ({ icon:'🎯', text:`Revise: ${n.topic}` })),
-      { icon:'⚡', text:'10 adaptive MCQs' },
-    ];
-    el.innerHTML = items.slice(0,5).map(i => `
-      <div class="agenda-item">
-        <span class="agenda-icon">${i.icon}</span>
-        <span class="agenda-text">${i.text}</span>
-      </div>`).join('');
-  },
+/* ═══ SEEN QUESTIONS ═══ */
+function markSeen(qId) {
+  if (!STATE.seenQuestions.includes(qId)) STATE.seenQuestions.push(qId);
+  // Reset after seeing 80% of bank
+  const totalQ = (typeof QUESTION_BANK !== 'undefined' ? QUESTION_BANK.length : 200)
+               + (typeof EXTRA_QUESTIONS !== 'undefined' ? EXTRA_QUESTIONS.length : 0);
+  if (STATE.seenQuestions.length > totalQ * 0.85) STATE.seenQuestions = [];
+  saveState();
+}
+function isSeen(qId) { return STATE.seenQuestions.includes(qId); }
+function getUnseen(pool) { return pool.filter(q => !isSeen(q.id)); }
 
-  renderWeekRings() {
-    const el = document.getElementById('weekRings');
-    if (!el) return;
-    const days = ['M','T','W','T','F','S','S'];
-    const today = new Date().getDay();
-    const values = days.map((d, i) => {
-      const off = (today - i + 7) % 7;
-      const date = new Date(Date.now() - off * 86400000).toDateString();
-      const studied = STATE.history.some(h => new Date(h.date).toDateString() === date);
-      return studied ? 65 + Math.floor(Math.random() * 30) : 0;
-    }).reverse();
+/* ═══ REVISION QUEUE ═══ */
+function addToRevision(nodeId) {
+  const existing = STATE.revisionQueue.find(r => r.nodeId === nodeId);
+  if (!existing) {
+    STATE.revisionQueue.push({ nodeId, lastRevised: Date.now(), intervalIndex: 0 });
+  }
+  saveState();
+}
+function getDueRevisions() {
+  const now = Date.now();
+  const INTERVALS = [1, 3, 7, 14, 30, 60];
+  return STATE.revisionQueue.filter(r => {
+    const interval = INTERVALS[Math.min(r.intervalIndex, INTERVALS.length-1)];
+    return now - r.lastRevised >= interval * 86400000;
+  });
+}
+function advanceRevision(nodeId) {
+  const r = STATE.revisionQueue.find(r => r.nodeId === nodeId);
+  if (r) {
+    r.lastRevised = Date.now();
+    r.intervalIndex = Math.min(r.intervalIndex + 1, 5);
+  }
+  saveState();
+}
 
-    const r = 18, c = 24, circ = 2 * Math.PI * r;
-    el.innerHTML = days.map((d, i) => {
-      const v = values[i];
-      const offset = circ - (v / 100) * circ;
-      const color = v > 70 ? '#22c55e' : v > 30 ? '#7c6af7' : '#2a2a38';
-      return `<div class="ring-item">
-        <svg class="ring-svg" viewBox="0 0 48 48">
-          <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="#2a2a38" stroke-width="4"/>
-          <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${color}" stroke-width="4"
-            stroke-dasharray="${circ}" stroke-dashoffset="${offset}" stroke-linecap="round"/>
-        </svg>
-        <div class="ring-day">${d}</div>
-      </div>`;
-    }).join('');
-  },
+/* ═══ HISTORY LOGGING ═══ */
+function logAnswer(nodeId, correct, qId) {
+  STATE.history.push({ date: Date.now(), nodeId, correct, qId });
+  if (STATE.history.length > 2000) STATE.history = STATE.history.slice(-2000);
+  updateMasteryFromAnswer(nodeId, correct);
+  if (!correct) addToRevision(nodeId);
+  saveState();
+}
 
-  renderStreakCal() {
-    const el = document.getElementById('streakCal');
-    if (!el) return;
-    const today = new Date();
-    const days = [];
-    for (let i = 27; i >= 0; i--) {
-      const d = new Date(today.getTime() - i * 86400000);
-      const studied = STATE.history.some(h => new Date(h.date).toDateString() === d.toDateString()) || (i < 3 && Math.random() > 0.3);
-      days.push({ d, studied, isToday: i === 0 });
+/* ═══ MISSION CONTROL ═══ */
+function renderMission() {
+  updateXPDisplay();
+  renderGreeting();
+  renderConceptPreview();
+  renderRadar();
+  renderJourney();
+  renderCAWidget();
+  renderHabitLoop();
+  renderPredictions();
+  renderMissionStats();
+}
+
+function renderGreeting() {
+  const g = document.getElementById('missionGreeting');
+  const h = document.getElementById('missionHeading');
+  const hr = new Date().getHours();
+  const greet = hr < 12 ? 'Good Morning' : hr < 17 ? 'Good Afternoon' : 'Good Evening';
+  const name = STATE.userName ? `, ${STATE.userName}` : '';
+  if (g) g.textContent = `${greet}${name}`;
+  if (h) {
+    if (!STATE.diagnosed) h.textContent = 'Begin with your Diagnostic Scan →';
+    else h.textContent = STATE.mode === 'exam' ? 'Exam Mode Active — Let\'s Score Higher' : 'Your Learning Journey Continues';
+  }
+}
+
+function renderMissionStats() {
+  const total = STATE.history.length;
+  const correct = STATE.history.filter(h => h.correct).length;
+  const acc = total > 0 ? Math.round(correct/total*100) : 0;
+  const el = id => document.getElementById(id);
+  if (el('statXP')) el('statXP').textContent = STATE.xp;
+  if (el('statQuestions')) el('statQuestions').textContent = total;
+  if (el('statAccuracy')) el('statAccuracy').textContent = total > 0 ? `${acc}%` : '—';
+  if (el('statStreak')) el('statStreak').textContent = STATE.streak;
+}
+
+function renderConceptPreview() {
+  const idx = new Date().getDate() % CONCEPT_OF_DAY.length;
+  const c = CONCEPT_OF_DAY[idx];
+  if (!c) return;
+  const el = id => document.getElementById(id);
+  if (el('cpConcept')) el('cpConcept').textContent = c.concept;
+  if (el('cpSubject')) el('cpSubject').textContent = c.subject;
+}
+
+function renderRadar() {
+  const canvas = document.getElementById('radarCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const subjects = ['Polity','Economy','Environment','History','Geography','Sci & Tech','Governance','Int. Relations'];
+  const scores = subjects.map(s => {
+    const nodes = KNOWLEDGE_GRAPH.nodes.filter(n => n.subject === s);
+    if (!nodes.length) return 20;
+    const avg = nodes.reduce((a,n) => a + getMastery(n.id), 0) / nodes.length;
+    return Math.max(15, avg);
+  });
+  drawRadar(ctx, canvas.width, canvas.height, subjects, scores);
+  // Zones
+  const zEl = document.getElementById('rcZones');
+  if (zEl) {
+    zEl.innerHTML = '';
+    const weak = subjects.filter((s,i) => scores[i] < 40);
+    const strong = subjects.filter((s,i) => scores[i] >= 60);
+    weak.slice(0,3).forEach(s => zEl.innerHTML += `<span class="zone-badge zone-weak">⚠ ${s}</span> `);
+    strong.slice(0,2).forEach(s => zEl.innerHTML += `<span class="zone-badge zone-strong">✓ ${s}</span> `);
+  }
+}
+
+function drawRadar(ctx, W, H, labels, values) {
+  const cx = W/2, cy = H/2;
+  const maxR = Math.min(cx, cy) - 28;
+  const n = labels.length;
+  ctx.clearRect(0, 0, W, H);
+  // Grid
+  for (let ring = 1; ring <= 4; ring++) {
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const angle = (i / n) * Math.PI * 2 - Math.PI/2;
+      const r = (ring/4) * maxR;
+      const x = cx + r * Math.cos(angle);
+      const y = cy + r * Math.sin(angle);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     }
-    el.innerHTML = days.map(d => `<div class="sc-day ${d.studied?'studied':''} ${d.isToday?'today':''}" title="${d.d.toDateString()}"></div>`).join('');
-  },
-
-  renderWeakAlert() {
-    const el = document.getElementById('weakAlertContent');
-    if (!el) return;
-    const weak = KNOWLEDGE_GRAPH.nodes
-      .sort((a,b) => getMastery(a.id) - getMastery(b.id))
-      .slice(0, 1)[0];
-    if (!weak) return;
-    el.innerHTML = `
-      <div class="alert-topic">${weak.topic}</div>
-      <div class="alert-detail">Mastery: ${getMastery(weak.id)}% · ${weak.subject}<br>
-      This is your lowest-scored knowledge node. Focus here next.</div>
-      <button class="hg-btn" onclick="App.goto('quiz')" style="margin-top:0.5rem">Practice now →</button>`;
+    ctx.closePath();
+    ctx.strokeStyle = 'rgba(124,106,247,0.15)';
+    ctx.lineWidth = 1; ctx.stroke();
   }
-};
+  // Axes
+  for (let i = 0; i < n; i++) {
+    const angle = (i / n) * Math.PI * 2 - Math.PI/2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + maxR * Math.cos(angle), cy + maxR * Math.sin(angle));
+    ctx.strokeStyle = 'rgba(124,106,247,0.2)';
+    ctx.stroke();
+    // Label
+    const lx = cx + (maxR + 16) * Math.cos(angle);
+    const ly = cy + (maxR + 16) * Math.sin(angle);
+    ctx.fillStyle = 'rgba(153,153,187,0.7)';
+    ctx.font = '9px Space Grotesk';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(labels[i].slice(0,6), lx, ly);
+  }
+  // Fill
+  ctx.beginPath();
+  for (let i = 0; i < n; i++) {
+    const angle = (i / n) * Math.PI * 2 - Math.PI/2;
+    const r = (values[i] / 100) * maxR;
+    const x = cx + r * Math.cos(angle);
+    const y = cy + r * Math.sin(angle);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(124,106,247,0.18)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(124,106,247,0.8)';
+  ctx.lineWidth = 2; ctx.stroke();
+  // Dots
+  for (let i = 0; i < n; i++) {
+    const angle = (i / n) * Math.PI * 2 - Math.PI/2;
+    const r = (values[i] / 100) * maxR;
+    ctx.beginPath();
+    ctx.arc(cx + r * Math.cos(angle), cy + r * Math.sin(angle), 3, 0, Math.PI*2);
+    ctx.fillStyle = '#7c6af7'; ctx.fill();
+  }
+}
+
+function renderJourney() {
+  const el = document.getElementById('journeyStages');
+  if (!el) return;
+  el.innerHTML = '';
+  const totalXP = STATE.xp;
+  const ncertDone = Object.keys(STATE.mastery).filter(k => STATE.mastery[k] > 0).length;
+  LEARNING_JOURNEY_STAGES.forEach((stage, i) => {
+    const unlocked = totalXP >= stage.xpRequired;
+    const isCurrent = i === LEARNING_JOURNEY_STAGES.findLastIndex((s,j) => totalXP >= s.xpRequired);
+    const cls = `journey-stage ${unlocked ? 'unlocked' : ''} ${isCurrent ? 'current' : ''}`;
+    el.innerHTML += `
+      <div class="${cls}" title="${stage.desc}">
+        <div class="js-icon">${stage.icon}</div>
+        <div class="js-label">${stage.label}</div>
+      </div>`;
+  });
+}
+
+function renderCAWidget() {
+  const el = document.getElementById('cawItems');
+  if (!el || typeof CURRENT_AFFAIRS === 'undefined') return;
+  el.innerHTML = CURRENT_AFFAIRS.slice(0,3).map(ca => `
+    <div class="caw-item" onclick="navigate('affairs')">
+      <div class="caw-cat">${ca.category}</div>
+      <div class="caw-headline">${ca.title}</div>
+    </div>`).join('');
+}
+
+function renderHabitLoop() {
+  const el = document.getElementById('habitItems');
+  if (!el) return;
+  const habits = [
+    { icon: '🌅', label: 'Morning: Concept of the Day', sub: '+15 XP', key: 'morningDone', panel: 'concept' },
+    { icon: '📚', label: 'Afternoon: Study Module', sub: '+50 XP', key: 'afternoonDone', panel: 'ncert' },
+    { icon: '⚡', label: 'Evening: Quiz + Revision', sub: '+35 XP', key: 'eveningDone', panel: 'quiz' },
+  ];
+  el.innerHTML = habits.map(h => `
+    <div class="habit-item ${STATE.habitLoop[h.key] ? 'done' : ''}" onclick="habitTap('${h.key}','${h.panel}')">
+      <span class="hi-icon">${h.icon}</span>
+      <div class="hi-text">
+        <div class="hi-label">${h.label}</div>
+        <div class="hi-sub">${h.sub}</div>
+      </div>
+      <div class="hi-check">✓</div>
+    </div>`).join('');
+}
+
+function habitTap(key, panel) {
+  if (!STATE.habitLoop[key]) {
+    STATE.habitLoop[key] = true;
+    saveState();
+    renderHabitLoop();
+  }
+  navigate(panel);
+}
+
+function renderPredictions() {
+  const el = document.getElementById('predictList');
+  if (!el || typeof TOPIC_FREQUENCY === 'undefined') return;
+  const hp = TOPIC_FREQUENCY.highProbability2025 || [];
+  el.innerHTML = hp.slice(0,5).map(t => {
+    const pct = t.probability || 70;
+    return `<div class="predict-item">
+      <span class="pi-prob">${pct}%</span>
+      <span class="pi-topic">${t.topic}</span>
+      <div class="pi-bar"><div class="pi-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+/* ═══ MENTOR SYSTEM ═══ */
+function toggleMentor() {
+  const b = document.getElementById('mentorBubble');
+  if (!b) return;
+  const isOpen = b.style.display !== 'none';
+  if (!isOpen) updateMentorAdvice();
+  b.style.display = isOpen ? 'none' : 'block';
+}
+
+function updateMentorAdvice() {
+  const subjects = ['Polity','Economy','Environment','History','Geography','Sci & Tech'];
+  const scores = subjects.map(s => {
+    const nodes = KNOWLEDGE_GRAPH.nodes.filter(n => n.subject === s);
+    return nodes.reduce((a,n) => a + getMastery(n.id), 0) / (nodes.length || 1);
+  });
+  const weakIdx = scores.indexOf(Math.min(...scores));
+  const weakSubject = subjects[weakIdx];
+  const dueCount = getDueRevisions().length;
+
+  let advice = '';
+  if (!STATE.diagnosed) advice = '🧬 Start with the Diagnostic Scan to map your knowledge landscape.';
+  else if (dueCount > 0) advice = `🔄 ${dueCount} topic${dueCount>1?'s':''} due for revision — don't let the spacing lapse!`;
+  else if (scores[weakIdx] < 30) advice = `⚠️ ${weakSubject} is your weakest zone. Focus NCERT modules there first.`;
+  else advice = '🚀 Good progress! Try the Adaptive Quiz to push your weak nodes further.';
+
+  document.getElementById('mentorMsg').textContent = advice;
+  const sugg = document.getElementById('mentorSugg');
+  sugg.innerHTML = [
+    ['🧬 Diagnostic', 'diagnostic'],
+    ['🔄 Revision', 'revision'],
+    ['⚡ Quick Quiz', 'quiz'],
+    ['📊 Analytics', 'performance'],
+  ].map(([label, panel]) =>
+    `<button class="mentor-sugg-btn" onclick="navigate('${panel}');toggleMentor()">${label}</button>`
+  ).join('');
+}
+
+/* ═══ SPLASH → INIT ═══ */
+window.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  const messages = [
+    'Initializing knowledge nodes...',
+    'Mapping 50 concept nodes...',
+    'Loading question bank...',
+    'Calibrating difficulty matrix...',
+    'Engaging cosmic engine...',
+  ];
+  let idx = 0; let pct = 0;
+  const fill = document.getElementById('splashFill');
+  const caption = document.getElementById('splashCaption');
+  const timer = setInterval(() => {
+    pct += 20;
+    if (fill) fill.style.width = pct + '%';
+    if (caption && idx < messages.length) caption.textContent = messages[idx++];
+    if (pct >= 100) {
+      clearInterval(timer);
+      setTimeout(() => {
+        const splash = document.getElementById('splash');
+        const app = document.getElementById('app');
+        if (splash) { splash.style.opacity = '0'; splash.style.transition = 'opacity 0.5s'; }
+        setTimeout(() => {
+          if (splash) splash.style.display = 'none';
+          if (app) app.style.display = 'block';
+          updateXPDisplay();
+          document.getElementById('streakDisplay').textContent = `${STATE.streak}🔥`;
+          navigate('home');
+        }, 500);
+      }, 300);
+    }
+  }, 400);
+});
