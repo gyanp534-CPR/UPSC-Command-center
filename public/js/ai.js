@@ -1,6 +1,6 @@
 /* ╔══════════════════════════════════════════════════════════╗
    ║  UPSC COSMOS v6 — ai.js (Fixed)                         ║
-   ║  Google Gemini 2.0 Flash — Free tier                    ║
+   ║  Google Gemini 2.5 Pro — Free tier                    ║
    ╚══════════════════════════════════════════════════════════╝ */
 
 const AI = (() => {
@@ -13,7 +13,10 @@ const AI = (() => {
   // ── Key Management ───────────────────────────────────────
   function getKey()       { return localStorage.getItem(KEY_STORE) || ''; }
   function saveKey(key)   { localStorage.setItem(KEY_STORE, key.trim()); }
-  function hasKey()       { return getKey().length > 10; }
+  function hasKey() {
+  const key = getKey();
+  return key.startsWith('AIza') && key.length > 30;
+}
   function clearKey()     { localStorage.removeItem(KEY_STORE); }
 
   // ── Core API Call ────────────────────────────────────────
@@ -151,7 +154,7 @@ Return ONLY a valid JSON object, no markdown, no extra text.`,
   async function askMentor(userMessage, history = []) {
     const sys  = buildUPSCContext('mentor');
     const msgs = [...history, { role: 'user', text: userMessage }];
-    return await chat(msgs, sys, { maxTokens: 1000, temperature: 0.7 });
+    return await chat(msgs, sys, { maxTokens: 2000, temperature: 0.7 });
   }
 
   async function evaluateEssay(essayText, topic, keywords = []) {
@@ -164,21 +167,21 @@ ${essayText}
 Return this JSON only:
 {"score":0,"grade":"","strengths":[],"weaknesses":[],"missing_dimensions":[],"missing_keywords":[],"model_sentence":"","overall_feedback":""}`;
 
-    const raw = await call(prompt, sys, { maxTokens: 800, temperature: 0.3 });
+    const raw = await call(prompt, sys, { maxTokens: 1200, temperature: 0.3 });
     try {
       return JSON.parse(raw.replace(/```json|```/g, '').trim());
     } catch {
       console.error('[AI] Essay JSON parse failed:', raw.slice(0, 200));
       return {
-        score: 50,
-        grade: 'Average',
-        overall_feedback: raw,
-        strengths: ['Answer submitted'],
-        weaknesses: ['Could not parse detailed evaluation'],
-        missing_dimensions: [],
-        missing_keywords: [],
-        model_sentence: '',
-      };
+  score: 50,
+  grade: 'Average',
+  strengths: ['Answer submitted'],
+  weaknesses: ['Could not parse detailed evaluation'],
+  missing_dimensions: [],
+  missing_keywords: [],
+  model_sentence: '',
+  overall_feedback: raw || 'Evaluation could not be generated properly. Please try again.',
+};
     }
   }
 
@@ -189,10 +192,14 @@ Return this JSON only:
 Return a JSON array only, no other text:
 [{"q":"question","opts":["A","B","C","D"],"ans":0,"explain":"explanation","wrongExplain":"why others are wrong"}]`;
 
-    const raw = await call(prompt, sys, { maxTokens: 1500, temperature: 0.5 });
+    const raw = await call(prompt, sys, { maxTokens: 3000, temperature: 0.5 });
 
     // Try to extract JSON array from response
-    let cleaned = raw.replace(/```json|```/g, '').trim();
+    let cleaned = raw
+  .replace(/```json|```/g, '')
+  .replace(/\n/g, ' ')
+  .replace(/\s+/g, ' ')
+  .trim();
 
     // Find array boundaries in case there's extra text
     const startIdx = cleaned.indexOf('[');
@@ -218,9 +225,13 @@ Return a JSON array only, no other text:
 Return this JSON only:
 {"core_issue":"","gs_paper":"GS-II","syllabus_topics":[],"pyq_angle":"","key_terms":[],"mcq":{"q":"","opts":["","","",""],"ans":0,"explain":""}}`;
 
-    const raw = await call(prompt, sys, { maxTokens: 900, temperature: 0.4 });
+    const raw = await call(prompt, sys, { maxTokens: 1500, temperature: 0.4 });
 
-    let cleaned = raw.replace(/```json|```/g, '').trim();
+    let cleaned = raw
+  .replace(/```json|```/g, '')
+  .replace(/\n/g, ' ')
+  .replace(/\s+/g, ' ')
+  .trim();
     const startIdx = cleaned.indexOf('{');
     const endIdx   = cleaned.lastIndexOf('}');
     if (startIdx !== -1 && endIdx !== -1) {
@@ -306,14 +317,22 @@ Return this JSON only:
         } else if (err.message.includes('quota') || err.message.includes('429')) {
           errEl.textContent = 'Rate limit hit. Wait a minute and try again.';
         } else {
-          errEl.textContent = 'Error: ' + err.message;
+          if (err.message.includes('API_KEY_INVALID') || err.message.includes('invalid')) {
+  errEl.textContent = 'Invalid API key. Please check and try again.';
+} else if (err.message.includes('quota') || err.message.includes('429')) {
+  errEl.textContent = 'Rate limit reached. Please wait a minute.';
+} else if (err.message.includes('network')) {
+  errEl.textContent = 'Network error. Check your internet connection.';
+} else {
+  errEl.textContent = 'Something went wrong. Please try again.';
+}
         }
       }
     }
   }
 
   // ── UI Helpers ───────────────────────────────────────────
-  function loadingHTML(message = 'AI is thinking...') {
+  function loadingHTML(message = 'Elysian is thinking...') {
     return `<div class="ai-loading">
       <div class="ai-loading-dots"><span></span><span></span><span></span></div>
       <div class="ai-loading-text">${message}</div>
@@ -402,7 +421,7 @@ const MENTOR = (() => {
         <div class="panel-subtitle">Ask anything · UPSC context-aware · Powered by Gemini</div>
       </div>
       <div class="mentor-status-bar">
-        <div class="msb-model">✅ Gemini 2.0 Flash · UPSC Mode</div>
+        <div class="msb-model">Gemini 2.5 Pro · UPSC Mode</div>
         <button class="msb-clear" onclick="MENTOR.clearChat()">Clear Chat</button>
       </div>
       <div class="mentor-quick-row" id="mentorQuickRow">
@@ -468,7 +487,7 @@ const MENTOR = (() => {
       removeTyping(typingId);
       appendBubble('assistant', reply, true);
       history.push({ role: 'assistant', text: reply });
-      if (history.length > 20) history = history.slice(-20);
+      if (history.length > 12) history = history.slice(-12);
     } catch (err) {
       removeTyping(typingId);
       const msg = err.message === 'NO_KEY'
