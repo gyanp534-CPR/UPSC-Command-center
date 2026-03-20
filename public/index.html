@@ -91,6 +91,16 @@
     <button class="nav-btn" onclick="navigate('plan')" data-panel="plan">
       <span class="nav-icon">🗓️</span><span class="nav-label">Study Plan</span>
     </button>
+    <div class="nav-section-label">AI FEATURES</div>
+<button class="nav-btn ai-nav" onclick="navigate('mentor')" data-panel="mentor">
+  <span class="nav-icon">🤖</span><span class="nav-label">AI Mentor</span>
+</button>
+<button class="nav-btn ai-nav" onclick="navigate('mcqgen')" data-panel="mcqgen">
+  <span class="nav-icon">⚡</span><span class="nav-label">AI MCQ Gen</span>
+</button>
+<button class="nav-btn ai-nav" onclick="navigate('newsai')" data-panel="newsai">
+  <span class="nav-icon">📰</span><span class="nav-label">News Analyzer</span>
+</button>
   </nav>
 
   <!-- ── MOBILE NAV BAR ──────────────────────── -->
@@ -132,6 +142,9 @@
         <button onclick="navigate('mains');toggleMoreMenu()">🖊️ Mains</button>
         <button onclick="navigate('schemes');toggleMoreMenu()">📋 Schemes</button>
         <button onclick="navigate('plan');toggleMoreMenu()">🗓️ Study Plan</button>
+        <button onclick="navigate('mentor');toggleMoreMenu()">🤖 AI Mentor</button>
+        <button onclick="navigate('mcqgen');toggleMoreMenu()">⚡ AI MCQ</button>
+        <button onclick="navigate('newsai');toggleMoreMenu()">📰 AI News</button>
       </div>
     </div>
   </div>
@@ -528,6 +541,27 @@
       </div>
     </div>
 
+    <!-- ─────────────────────────────────────── -->
+<!-- PANEL: AI MENTOR                        -->
+<!-- ─────────────────────────────────────── -->
+<div id="panel-mentor" class="panel">
+  <!-- Rendered by MENTOR.render() -->
+</div>
+
+<!-- ─────────────────────────────────────── -->
+<!-- PANEL: AI MCQ GENERATOR                 -->
+<!-- ─────────────────────────────────────── -->
+<div id="panel-mcqgen" class="panel">
+  <!-- Rendered by MCQGEN.render() -->
+</div>
+
+<!-- ─────────────────────────────────────── -->
+<!-- PANEL: AI NEWS ANALYZER                 -->
+<!-- ─────────────────────────────────────── -->
+<div id="panel-newsai" class="panel">
+  <!-- Rendered by NEWSAI.render() -->
+</div>
+
   </main><!-- /mainContent -->
 </div><!-- /app -->
 
@@ -542,6 +576,7 @@
 <script src="js/quiz.js"></script>
 <script src="js/ncert.js"></script>
 <script src="js/graph.js"></script>
+<script src="js/ai.js"></script>
 <script src="js/panels.js"></script>
 <script src="js/features.js"></script>
 
