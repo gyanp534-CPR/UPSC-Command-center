@@ -1076,3 +1076,264 @@ const MAINS = (() => {
 
   return { render, open, toggleDim, updateWordCount, evaluate, revealModel, backToList };
 })();
+
+// ══════════════════════════════════════════════
+// AI MCQ GENERATOR
+// ══════════════════════════════════════════════
+const MCQGEN = (() => {
+  let generatedQs  = [];
+  let quizActive   = false;
+  let quizCurrent  = 0;
+  let quizScore    = 0;
+
+  const SUBJECTS = [
+    'Polity', 'Economy', 'Environment', 'History',
+    'Geography', 'Sci & Tech', 'Governance', 'Int. Relations',
+    'Current Affairs',
+  ];
+
+  const TOPICS_BY_SUBJECT = {
+    'Polity':          ['Fundamental Rights', 'DPSP', 'Parliament', 'Judiciary', 'Federalism', 'Elections', 'Constitutional Amendments', 'Emergency Provisions'],
+    'Economy':         ['GDP and National Income', 'Monetary Policy', 'Fiscal Policy', 'Agriculture', 'Digital Economy', 'Banking', 'Trade Policy', 'Budget'],
+    'Environment':     ['Climate Change', 'Biodiversity', 'Protected Areas', 'Pollution', 'International Conventions', 'Renewable Energy', 'Green Hydrogen'],
+    'History':         ['Ancient India', 'Medieval India', 'Freedom Struggle', 'Post-Independence', 'Art and Culture'],
+    'Geography':       ['Physical Geography', 'Indian Geography', 'Agriculture', 'Population', 'Natural Resources'],
+    'Sci & Tech':      ['Space Technology (ISRO)', 'Biotechnology', 'AI and Digital', 'Cybersecurity', 'Defence Technology'],
+    'Governance':      ['E-Governance', 'Social Policy', 'Anti-Corruption Bodies', 'Civil Services'],
+    'Int. Relations':  ['South Asia', 'Multilateral Groupings', 'India-China', 'India-USA', 'Global Order'],
+    'Current Affairs': ['Climate & Environment', 'Economy & Finance', 'Polity & Governance', 'Science & Technology', 'International Relations'],
+  };
+
+  function render() {
+    const el = document.getElementById('panel-mcqgen');
+    if (!el) return;
+
+    if (!AI.hasKey()) {
+      el.innerHTML = `
+        <div class="panel-header">
+          <h1>⚡ AI MCQ Generator</h1>
+          <div class="panel-subtitle">Generate unlimited UPSC-style questions on any topic</div>
+        </div>
+        <div id="mcqgen-setup-area"></div>`;
+      AI.renderSetup('mcqgen-setup-area', true);
+      return;
+    }
+
+    el.innerHTML = `
+      <div class="panel-header">
+        <h1>⚡ AI MCQ Generator</h1>
+        <div class="panel-subtitle">Generate unlimited UPSC-style questions on any topic</div>
+      </div>
+
+      <!-- Config form -->
+      <div class="mcqgen-form section-card">
+        <div class="mgf-row">
+          <label class="mgf-label">Subject</label>
+          <select id="mcqSubject" class="mgf-select" onchange="MCQGEN.updateTopics()">
+            ${SUBJECTS.map(s => `<option value="${s}">${s}</option>`).join('')}
+          </select>
+        </div>
+
+        <div class="mgf-row">
+          <label class="mgf-label">Topic</label>
+          <select id="mcqTopic" class="mgf-select">
+            ${(TOPICS_BY_SUBJECT['Polity'] || []).map(t => `<option value="${t}">${t}</option>`).join('')}
+          </select>
+        </div>
+
+        <div class="mgf-row">
+          <label class="mgf-label">Custom Topic <span style="color:var(--text3)">(optional)</span></label>
+          <input id="mcqCustomTopic" class="mgf-input" type="text"
+            placeholder="e.g. Puttaswamy judgment, PANCHAMRIT commitments..." />
+        </div>
+
+        <div class="mgf-two-col">
+          <div class="mgf-row">
+            <label class="mgf-label">Questions</label>
+            <div class="mgf-chips" id="countChips">
+              ${[3, 5, 10].map((n, i) =>
+                `<button class="mgf-chip ${i === 1 ? 'active' : ''}"
+                  onclick="MCQGEN.setCount(${n}, this)">${n}Q</button>`
+              ).join('')}
+            </div>
+          </div>
+          <div class="mgf-row">
+            <label class="mgf-label">Difficulty</label>
+            <div class="mgf-chips" id="diffChips">
+              ${['easy', 'medium', 'hard'].map((d, i) =>
+                `<button class="mgf-chip ${i === 1 ? 'active' : ''}"
+                  onclick="MCQGEN.setDiff('${d}', this)">${d}</button>`
+              ).join('')}
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-primary" style="width:100%;margin-top:4px"
+          onclick="MCQGEN.generate()" id="mcqGenBtn">
+          ⚡ Generate Questions
+        </button>
+      </div>
+
+      <!-- Output area -->
+      <div id="mcqgen-output" style="margin-top:16px"></div>`;
+  }
+
+  function updateTopics() {
+    const subj  = document.getElementById('mcqSubject')?.value;
+    const sel   = document.getElementById('mcqTopic');
+    if (!sel || !subj) return;
+    const topics = TOPICS_BY_SUBJECT[subj] || [];
+    sel.innerHTML = topics.map(t => `<option value="${t}">${t}</option>`).join('');
+  }
+
+  let _count = 5, _diff = 'medium';
+  function setCount(n, btn) {
+    _count = n;
+    document.querySelectorAll('#countChips .mgf-chip').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+  }
+  function setDiff(d, btn) {
+    _diff = d;
+    document.querySelectorAll('#diffChips .mgf-chip').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+  }
+
+  async function generate() {
+    const subj   = document.getElementById('mcqSubject')?.value || 'Polity';
+    const topic  = document.getElementById('mcqCustomTopic')?.value.trim()
+                || document.getElementById('mcqTopic')?.value
+                || 'Constitutional Framework';
+    const btn    = document.getElementById('mcqGenBtn');
+    const output = document.getElementById('mcqgen-output');
+    if (!output) return;
+
+    if (btn) { btn.disabled = true; btn.textContent = 'Generating...'; }
+    output.innerHTML = AI.loadingHTML(`Generating ${_count} ${_diff} questions on "${topic}"...`);
+
+    try {
+      const qs = await AI.generateMCQ(topic, subj, _count, _diff);
+      if (!qs || qs.length === 0) throw new Error('No questions returned');
+
+      generatedQs = qs.map((q, i) => ({
+        ...q,
+        id:      'aiq_' + Date.now() + '_' + i,
+        subject: subj,
+        topic,
+        node:    KNOWLEDGE_GRAPH.nodes.find(n => n.subject === subj)?.id || 'p1',
+      }));
+
+      quizActive  = false;
+      renderGenerated(output, topic);
+
+    } catch (err) {
+      output.innerHTML = AI.errorHTML('Generation failed: ' + err.message, 'MCQGEN.generate()');
+    }
+
+    if (btn) { btn.disabled = false; btn.textContent = '⚡ Generate Questions'; }
+  }
+
+  function renderGenerated(output, topic) {
+    output.innerHTML = `
+      <div class="mcqgen-result-header">
+        <div class="mgrh-topic">${generatedQs.length} questions on: <strong>${topic}</strong></div>
+        <button class="btn-primary" onclick="MCQGEN.startQuiz()">Practice Now →</button>
+      </div>
+      <div class="mcqgen-preview">
+        ${generatedQs.map((q, i) => `
+          <div class="mgp-item">
+            <div class="mgp-num">Q${i + 1}</div>
+            <div class="mgp-text">${q.q}</div>
+          </div>`).join('')}
+      </div>`;
+  }
+
+  function startQuiz() {
+    quizActive  = true;
+    quizCurrent = 0;
+    quizScore   = 0;
+    const output = document.getElementById('mcqgen-output');
+    if (output) showQuizQ(output);
+  }
+
+  function showQuizQ(output) {
+    if (!output) return;
+    const q = generatedQs[quizCurrent];
+    output.innerHTML = `
+      <div class="mcqgen-quiz-header">
+        <div class="mqh-progress">${quizCurrent + 1} / ${generatedQs.length}</div>
+        <div class="mqh-bar"><div class="mqh-fill" style="width:${(quizCurrent / generatedQs.length) * 100}%"></div></div>
+        <button class="btn-sm ghost" onclick="MCQGEN.exitQuiz()">✕</button>
+      </div>
+      <div class="question-card ai-question-card">
+        <div class="qc-subject" style="color:var(--cyan)">🤖 AI-Generated · ${q.subject} · ${q.topic}</div>
+        <div class="qc-text">${q.q}</div>
+        <div class="qc-opts">
+          ${q.opts.map((opt, i) =>
+            `<button class="q-opt" onclick="MCQGEN.answer(${i})">${opt}</button>`
+          ).join('')}
+        </div>
+      </div>`;
+  }
+
+  function answer(idx) {
+    const q      = generatedQs[quizCurrent];
+    const correct= idx === q.ans;
+    if (correct) { quizScore++; addXP(XP_REWARDS.quiz_correct, 'AI MCQ'); }
+    logAnswer(q.node, correct, q.id);
+
+    document.querySelectorAll('.qc-opts .q-opt').forEach((btn, i) => {
+      btn.disabled = true;
+      if (i === q.ans) btn.classList.add('correct');
+      else if (i === idx && !correct) btn.classList.add('wrong');
+    });
+
+    const card = document.querySelector('.ai-question-card');
+    if (card) {
+      const fb = document.createElement('div');
+      fb.className = 'question-feedback';
+      fb.innerHTML = `
+        <div class="qf-label">${correct ? '✅ Correct!' : '❌ Incorrect'}</div>
+        <p>${q.explain}</p>
+        ${!correct && q.wrongExplain ? `<div class="explain-box"><div class="explain-label">Common trap:</div>${q.wrongExplain}</div>` : ''}
+        <button class="next-btn" onclick="MCQGEN.nextQ()">
+          ${quizCurrent + 1 < generatedQs.length ? 'Next →' : 'Finish →'}
+        </button>`;
+      card.appendChild(fb);
+    }
+  }
+
+  function nextQ() {
+    quizCurrent++;
+    const output = document.getElementById('mcqgen-output');
+    if (quizCurrent >= generatedQs.length) {
+      showQuizResults(output);
+    } else {
+      showQuizQ(output);
+    }
+  }
+
+  function showQuizResults(output) {
+    const pct   = Math.round((quizScore / generatedQs.length) * 100);
+    const color = pct >= 70 ? 'var(--green)' : pct >= 50 ? 'var(--gold)' : 'var(--red)';
+    addXP(XP_REWARDS.quiz_complete, 'AI MCQ Set Complete');
+    if (!output) return;
+    output.innerHTML = `
+      <div class="quiz-result-summary">
+        <div class="qrs-score" style="color:${color}">${pct}%</div>
+        <div class="qrs-label">${quizScore}/${generatedQs.length} correct on AI-generated questions</div>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px">
+          <button class="btn-primary" onclick="MCQGEN.startQuiz()">Retry Same Set</button>
+          <button class="btn-secondary" onclick="MCQGEN.generate()">Generate New Set</button>
+        </div>
+      </div>`;
+  }
+
+  function exitQuiz() {
+    const output = document.getElementById('mcqgen-output');
+    if (output && generatedQs.length > 0) {
+      renderGenerated(output, generatedQs[0].topic);
+    }
+  }
+
+  return { render, updateTopics, setCount, setDiff, generate, startQuiz, answer, nextQ, exitQuiz };
+})();
