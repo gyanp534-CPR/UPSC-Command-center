@@ -249,7 +249,7 @@ const DEBATE = (() => {
     if (!listEl) return;
     listEl.innerHTML = `
       <div class="debate-intro">
-        <p style="color:var(--text2);font-size:13px;line-height:1.7">UPSC Mains GS-II and Essay papers require balanced multi-dimensional arguments. Pick any topic and study both sides rigorously.</p>
+        <p style="color:var(--text2);font-size:13px;line-height:1.7">UPSC Mains GS-II and papers require balanced multi-dimensional arguments. Pick any topic and study both sides rigorously.</p>
       </div>
       <div class="debate-topic-list">
         ${items.map((d, i) => `
@@ -297,7 +297,7 @@ const DEBATE = (() => {
             <p>${d.neutral}</p>
           </div>` : ''}
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
-          <button class="btn-primary" onclick="navigate('essay');ESSAY.renderList()">Write Essay on This →</button>
+          <button class="btn-primary" onclick="navigate('essay');ESSAY.renderList()">Write on This →</button>
           <button class="btn-secondary" onclick="navigate('mains');MAINS.render()">Mains Answer Practice →</button>
         </div>
       </div>`;
@@ -308,7 +308,7 @@ const DEBATE = (() => {
 
 
 // ══════════════════════════════════════════════
-// ESSAY STUDIO
+// STUDIO
 // ══════════════════════════════════════════════
 const ESSAY = (() => {
   let activeEssay = null;
@@ -388,57 +388,106 @@ const ESSAY = (() => {
     if (fb) fb.style.display = 'none';
   }
 
-  function evaluate() {
+ async function evaluate() {
     const ta = document.getElementById('essayTextarea');
     if (!ta || !ta.value.trim()) { alert('Write your essay first!'); return; }
     const text = ta.value;
     const wc = text.trim().split(/\s+/).filter(Boolean).length;
     if (wc < 50) { alert('Please write at least 50 words for evaluation.'); return; }
 
-    const keywords = activeEssay ? activeEssay.keywords : [];
-    const kwHits = keywords.filter(k => text.toLowerCase().includes(k.toLowerCase()));
-    const kwScore = Math.round((kwHits.length / (keywords.length || 1)) * 100);
-    const lengthScore = wc >= 1000 ? 100 : wc >= 700 ? 80 : wc >= 400 ? 60 : wc >= 200 ? 40 : 20;
-    const hasParas = (text.match(/\n\n/g) || []).length >= 3;
-    const hasIntro = text.length > 0 && text.substring(0, 200).split(' ').length >= 20;
-    const structureScore = hasParas ? (hasIntro ? 90 : 70) : 50;
-    const overall = Math.round(kwScore * 0.4 + lengthScore * 0.35 + structureScore * 0.25);
-    const grade = overall >= 80 ? 'Excellent' : overall >= 65 ? 'Good' : overall >= 50 ? 'Average' : 'Needs Work';
-    const gradeColor = overall >= 80 ? 'var(--green)' : overall >= 65 ? 'var(--gold)' : overall >= 50 ? 'var(--accent)' : 'var(--red)';
-
-    addXP(XP_REWARDS.essay_submit, 'Essay Evaluated!');
-
     const fb = document.getElementById('essayFeedback');
     if (!fb) return;
     fb.style.display = 'block';
-    fb.innerHTML = `
-      <div class="essay-result-card">
-        <div class="erc-score-row">
-          <div class="erc-score" style="color:${gradeColor}">${overall}%</div>
-          <div class="erc-grade" style="color:${gradeColor}">${grade}</div>
-        </div>
-        <div class="erc-bars">
-          ${[['Keyword Coverage', kwScore, `Used ${kwHits.length}/${keywords.length} key terms`],
-             ['Length & Depth', lengthScore, `${wc} words`],
-             ['Structure', structureScore, hasParas ? 'Multiple paragraphs detected' : 'Add more paragraph breaks']
-            ].map(([label, score, note]) => `
-            <div class="erc-bar-row">
-              <div class="erc-bar-label">${label}</div>
-              <div class="erc-bar-track"><div class="erc-bar-fill" style="width:${score}%"></div></div>
-              <div class="erc-bar-score">${score}%</div>
-              <div class="erc-bar-note">${note}</div>
-            </div>`).join('')}
-        </div>
-        ${kwHits.length > 0 ? `<div class="erc-kw-found">✅ Keywords found: ${kwHits.join(', ')}</div>` : ''}
-        ${kwHits.length < keywords.length ? `
-          <div class="erc-kw-missing">
-            ⚠️ Missing: ${keywords.filter(k => !text.toLowerCase().includes(k.toLowerCase())).join(', ')}
-          </div>` : ''}
-        <div class="erc-tip">
-          💡 UPSC Tip: Structure + multi-dimensional analysis outweigh word count alone. 
-          Each body paragraph should address a different dimension (constitutional, economic, social, global).
-        </div>
-      </div>`;
+
+    // If AI connected — use AI evaluation
+    if (AI.hasKey()) {
+      fb.innerHTML = AI.loadingHTML('AI evaluating your essay...');
+      fb.scrollIntoView({ behavior: 'smooth' });
+
+      try {
+        const result = await AI.evaluateEssay(
+          text,
+          activeEssay ? activeEssay.title : 'UPSC Essay',
+          activeEssay ? activeEssay.keywords : []
+        );
+
+        const gradeColor = result.score >= 80 ? 'var(--green)'
+          : result.score >= 65 ? 'var(--gold)'
+          : result.score >= 50 ? 'var(--accent)'
+          : 'var(--red)';
+
+        addXP(XP_REWARDS.essay_submit, 'AI Essay Evaluated!');
+
+        fb.innerHTML = `
+          <div class="essay-result-card ai-result">
+            <div class="ai-eval-badge">🤖 AI Evaluated</div>
+            <div class="erc-score-row">
+              <div class="erc-score" style="color:${gradeColor}">${result.score}</div>
+              <div class="erc-grade" style="color:${gradeColor}">${result.grade}</div>
+              <div style="font-size:12px;color:var(--text3);font-family:var(--mono)">${wc} words</div>
+            </div>
+
+            <div class="ai-feedback-section">
+              <div class="afs-label good">✅ Strengths</div>
+              ${(result.strengths || []).map(s => `<div class="afs-point">${s}</div>`).join('')}
+            </div>
+
+            <div class="ai-feedback-section">
+              <div class="afs-label bad">⚠️ Weaknesses</div>
+              ${(result.weaknesses || []).map(w => `<div class="afs-point">${w}</div>`).join('')}
+            </div>
+
+            ${(result.missing_dimensions || []).length > 0 ? `
+              <div class="ai-feedback-section">
+                <div class="afs-label warn">📌 Missing Dimensions</div>
+                ${result.missing_dimensions.map(d => `<div class="afs-point">${d}</div>`).join('')}
+              </div>` : ''}
+
+            ${result.model_sentence ? `
+              <div class="ai-model-sentence">
+                <div class="ams-label">✍️ Example of ideal writing:</div>
+                <div class="ams-text">"${result.model_sentence}"</div>
+              </div>` : ''}
+
+            <div class="ai-overall-feedback">${result.overall_feedback}</div>
+
+            <button class="btn-secondary" style="margin-top:12px;width:100%"
+              onclick="MAINS.render();navigate('mains')">
+              Practice Structured Answer Writing →
+            </button>
+          </div>`;
+
+      } catch (err) {
+        // Fallback to keyword scoring if AI fails
+        fb.innerHTML = AI.errorHTML('AI evaluation failed: ' + err.message + '. Using keyword scoring instead.', 'ESSAY.evaluate()');
+      }
+
+    } else {
+      // Original keyword scoring fallback
+      const keywords = activeEssay ? activeEssay.keywords : [];
+      const kwHits = keywords.filter(k => text.toLowerCase().includes(k.toLowerCase()));
+      const kwScore = Math.round((kwHits.length / (keywords.length || 1)) * 100);
+      const lengthScore = wc >= 1000 ? 100 : wc >= 700 ? 80 : wc >= 400 ? 60 : 20;
+      const paraCount = (text.match(/\n\n/g) || []).length;
+      const structureScore = paraCount >= 4 ? 90 : paraCount >= 2 ? 65 : 40;
+      const overall = Math.round(kwScore * 0.4 + lengthScore * 0.35 + structureScore * 0.25);
+      const gradeColor = overall >= 80 ? 'var(--green)' : overall >= 65 ? 'var(--gold)' : overall >= 50 ? 'var(--accent)' : 'var(--red)';
+
+      addXP(XP_REWARDS.essay_submit, 'Essay Evaluated!');
+
+      fb.innerHTML = `
+        <div class="essay-result-card">
+          <div class="erc-score-row">
+            <div class="erc-score" style="color:${gradeColor}">${overall}%</div>
+            <div class="erc-grade" style="color:${gradeColor}">${overall >= 80 ? 'Excellent' : overall >= 65 ? 'Good' : overall >= 50 ? 'Average' : 'Needs Work'}</div>
+          </div>
+          <div class="erc-tip">
+            💡 Connect AI for detailed qualitative feedback.
+            <button class="btn-sm accent" style="margin-left:8px" onclick="navigate('mentor')">Connect AI →</button>
+          </div>
+        </div>`;
+    }
+
     fb.scrollIntoView({ behavior: 'smooth' });
   }
 
