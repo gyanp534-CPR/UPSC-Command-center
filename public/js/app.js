@@ -121,29 +121,36 @@ function touchStreak() {
 /* ═══ NAVIGATION ═══ */
 function navigate(panel) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.nav-btn, .mnav-btn').forEach(n => n.classList.remove('active'));
   const el = document.getElementById(`panel-${panel}`);
   if (el) el.classList.add('active');
-  const nav = document.getElementById(`nav-${panel}`);
-  if (nav) nav.classList.add('active');
+  document.querySelectorAll(`[data-panel="${panel}"]`).forEach(n => n.classList.add('active'));
   STATE.currentPanel = panel;
   saveState();
   // Render panel-specific content
   const renders = {
-    home: renderMission,
-    diagnostic: () => {},
-    ncert: () => typeof NCERT !== 'undefined' && NCERT.renderList(),
-    graph: () => typeof GRAPH !== 'undefined' && GRAPH.init(),
-    quiz: () => typeof QUIZ !== 'undefined' && QUIZ.renderModes(),
-    affairs: () => typeof AFFAIRS !== 'undefined' && AFFAIRS.render(),
-    pattern: () => typeof PATTERN !== 'undefined' && PATTERN.render(),
-    concept: () => typeof CONCEPTS !== 'undefined' && CONCEPTS.render(),
-    debate: () => typeof DEBATE !== 'undefined' && DEBATE.renderList(),
-    essay: () => typeof ESSAY !== 'undefined' && ESSAY.renderList(),
-    plan: () => typeof PLAN !== 'undefined' && PLAN.render(),
-    revision: () => typeof REVISION !== 'undefined' && REVISION.render(),
-    schemes: () => typeof SCHEMES !== 'undefined' && SCHEMES.render(),
-    performance: () => typeof PERFORMANCE !== 'undefined' && PERFORMANCE.render(),
+    home:        renderMission,
+    diagnostic:  () => {},
+    ncert:       () => typeof NCERT        !== 'undefined' && NCERT.renderList(),
+    graph:       () => typeof GRAPH        !== 'undefined' && GRAPH.init(),
+    quiz:        () => typeof QUIZ         !== 'undefined' && QUIZ.renderModes(),
+    affairs:     () => typeof AFFAIRS      !== 'undefined' && AFFAIRS.render(),
+    pattern:     () => typeof PATTERN      !== 'undefined' && PATTERN.render(),
+    concept:     () => typeof CONCEPTS     !== 'undefined' && CONCEPTS.render(),
+    debate:      () => typeof DEBATE       !== 'undefined' && DEBATE.renderList(),
+    essay:       () => typeof ESSAY        !== 'undefined' && ESSAY.renderList(),
+    plan:        () => typeof PLAN         !== 'undefined' && PLAN.render(),
+    revision:    () => typeof REVISION     !== 'undefined' && REVISION.render(),
+    schemes:     () => typeof SCHEMES      !== 'undefined' && SCHEMES.render(),
+    performance: () => typeof PERFORMANCE  !== 'undefined' && PERFORMANCE.render(),
+    cluster:     () => typeof CLUSTER      !== 'undefined' && CLUSTER.render(),
+    pyqlineage:  () => typeof PYQLINEAGE   !== 'undefined' && PYQLINEAGE.render(),
+    timeline:    () => typeof TIMELINE     !== 'undefined' && TIMELINE.render(),
+    mock:        () => typeof MOCK         !== 'undefined' && MOCK.render(),
+    mains:       () => typeof MAINS        !== 'undefined' && MAINS.render(),
+    mentor:      () => typeof MENTOR       !== 'undefined' && MENTOR.render(),
+    mcqgen:      () => typeof MCQGEN       !== 'undefined' && MCQGEN.render(),
+    newsai:      () => typeof NEWSAI       !== 'undefined' && NEWSAI.render(),
   };
   if (renders[panel]) renders[panel]();
   window.scrollTo(0, 0);
