@@ -1337,3 +1337,263 @@ const MCQGEN = (() => {
 
   return { render, updateTopics, setCount, setDiff, generate, startQuiz, answer, nextQ, exitQuiz };
 })();
+
+// ══════════════════════════════════════════════
+// AI NEWS ANALYZER
+// ══════════════════════════════════════════════
+const NEWSAI = (() => {
+  let lastResult = null;
+
+  const GS_COLORS = {
+    'GS-I':    '#f59e0b',
+    'GS-II':   '#7c6af7',
+    'GS-III':  '#22c55e',
+    'GS-IV':   '#06b6d4',
+    'Prelims': '#a855f7',
+    'Essay':   '#f97316',
+  };
+
+  const SAMPLE_HEADLINES = [
+    'Supreme Court rules electoral bonds scheme unconstitutional',
+    'India achieves 200 GW renewable energy capacity milestone',
+    'RBI keeps repo rate unchanged at 6.5%, maintains withdrawal of accommodation',
+    'India and China agree to resume patrolling at LAC friction points',
+    'Parliament passes Digital Personal Data Protection Amendment Bill',
+    'ISRO successfully tests Gaganyaan abort mission system',
+    'India\'s current account deficit widens to 1.2% of GDP',
+    'National Green Hydrogen Mission: India targets 5 MMT by 2030',
+  ];
+
+  function render() {
+    const el = document.getElementById('panel-newsai');
+    if (!el) return;
+
+    if (!AI.hasKey()) {
+      el.innerHTML = `
+        <div class="panel-header">
+          <h1>📰 AI News Analyzer</h1>
+          <div class="panel-subtitle">News → Syllabus → MCQ in seconds</div>
+        </div>
+        <div id="newsai-setup-area"></div>`;
+      AI.renderSetup('newsai-setup-area', true);
+      return;
+    }
+
+    el.innerHTML = `
+      <div class="panel-header">
+        <h1>📰 AI News Analyzer</h1>
+        <div class="panel-subtitle">Paste any headline → Get syllabus map + PYQ angle + Practice MCQ</div>
+      </div>
+
+      <div class="newsai-form section-card">
+        <label class="mgf-label">Headline / News Item</label>
+        <input
+          id="newsHeadline"
+          class="mgf-input"
+          type="text"
+          placeholder="e.g. RBI raises repo rate by 25 basis points..."
+          style="margin-bottom:10px"
+        />
+        <label class="mgf-label">More context <span style="color:var(--text3)">(optional)</span></label>
+        <textarea
+          id="newsBody"
+          class="mgf-input"
+          rows="3"
+          placeholder="Paste additional details from the article..."
+          style="resize:vertical;font-family:var(--body);font-size:13px;line-height:1.6"
+        ></textarea>
+        <button class="btn-primary" style="width:100%;margin-top:12px"
+          onclick="NEWSAI.analyze()" id="newsAnalyzeBtn">
+          🔍 Analyze for UPSC
+        </button>
+      </div>
+
+      <!-- Sample headlines -->
+      <div class="newsai-samples">
+        <div class="ns-label">Try a sample:</div>
+        <div class="ns-chips">
+          ${SAMPLE_HEADLINES.slice(0, 4).map(h =>
+            `<button class="quick-chip" onclick="NEWSAI.loadSample('${h.replace(/'/g, "\\'")}')">${h.slice(0, 45)}${h.length > 45 ? '…' : ''}</button>`
+          ).join('')}
+        </div>
+      </div>
+
+      <div id="newsai-output" style="margin-top:16px"></div>`;
+  }
+
+  function loadSample(headline) {
+    const inp = document.getElementById('newsHeadline');
+    if (inp) {
+      inp.value = headline;
+      inp.focus();
+    }
+  }
+
+  async function analyze() {
+    const headline = document.getElementById('newsHeadline')?.value.trim();
+    const body     = document.getElementById('newsBody')?.value.trim() || '';
+    if (!headline) { alert('Enter a headline first!'); return; }
+
+    const btn    = document.getElementById('newsAnalyzeBtn');
+    const output = document.getElementById('newsai-output');
+    if (!output) return;
+
+    if (btn) { btn.disabled = true; btn.textContent = 'Analyzing...'; }
+    output.innerHTML = AI.loadingHTML('Mapping to UPSC syllabus...');
+
+    try {
+      const result = await AI.analyzeNews(headline, body);
+      if (!result) throw new Error('Analysis returned empty');
+
+      lastResult = result;
+      renderResult(output, result, headline);
+
+    } catch (err) {
+      output.innerHTML = AI.errorHTML('Analysis failed: ' + err.message, 'NEWSAI.analyze()');
+    }
+
+    if (btn) { btn.disabled = false; btn.textContent = '🔍 Analyze for UPSC'; }
+  }
+
+  function renderResult(output, r, headline) {
+    const gsColor = GS_COLORS[r.gs_paper] || 'var(--accent)';
+
+    output.innerHTML = `
+      <div class="newsai-result fade-in">
+
+        <!-- Header -->
+        <div class="nar-headline">${headline}</div>
+        <div class="nar-core">${r.core_issue}</div>
+
+        <!-- Paper + Syllabus -->
+        <div class="nar-meta-row">
+          <div class="nar-paper" style="background:${gsColor}20;border-color:${gsColor}40;color:${gsColor}">
+            ${r.gs_paper}
+          </div>
+          <div class="nar-syllabus-chips">
+            ${(r.syllabus_topics || []).map(t =>
+              `<span class="nar-syllabus-chip">${t}</span>`
+            ).join('')}
+          </div>
+        </div>
+
+        <!-- PYQ Angle -->
+        <div class="nar-pyq-box">
+          <div class="nar-pyq-label">📚 PYQ ANGLE</div>
+          <div class="nar-pyq-text">${r.pyq_angle}</div>
+        </div>
+
+        <!-- Key Terms -->
+        <div class="nar-terms">
+          <div class="nar-terms-label">🔑 KEY TERMS TO KNOW</div>
+          <div class="nar-terms-chips">
+            ${(r.key_terms || []).map(t =>
+              `<span class="keyword-chip">${t}</span>`
+            ).join('')}
+          </div>
+        </div>
+
+        <!-- Practice MCQ -->
+        ${r.mcq ? `
+          <div class="nar-mcq">
+            <div class="nar-mcq-label">⚡ PRACTICE MCQ</div>
+            <div class="qc-text">${r.mcq.q}</div>
+            <div class="qc-opts" id="newsai_opts">
+              ${r.mcq.opts.map((opt, i) =>
+                `<button class="q-opt" onclick="NEWSAI.answerMCQ(${i})">${opt}</button>`
+              ).join('')}
+            </div>
+            <div id="newsai_feedback" style="display:none" class="question-feedback"></div>
+          </div>` : ''}
+
+        <!-- Actions -->
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
+          <button class="btn-secondary" onclick="NEWSAI.addToAffairs()">
+            + Add to Affairs Feed
+          </button>
+          <button class="btn-secondary" onclick="NEWSAI.generateMore()">
+            ⚡ Generate 5 More MCQs
+          </button>
+        </div>
+
+      </div>`;
+  }
+
+  function answerMCQ(idx) {
+    if (!lastResult?.mcq) return;
+    const mcq     = lastResult.mcq;
+    const correct = idx === mcq.ans;
+    if (correct) addXP(XP_REWARDS.quiz_correct, 'News MCQ');
+
+    document.querySelectorAll('#newsai_opts .q-opt').forEach((btn, i) => {
+      btn.disabled = true;
+      if (i === mcq.ans) btn.classList.add('correct');
+      else if (i === idx && !correct) btn.classList.add('wrong');
+    });
+
+    const fb = document.getElementById('newsai_feedback');
+    if (fb) {
+      fb.style.display = 'block';
+      fb.innerHTML = `
+        <div class="qf-label">${correct ? '✅ Correct!' : '❌ Incorrect'}</div>
+        <p>${mcq.explain}</p>`;
+    }
+  }
+
+  function addToAffairs() {
+    showXPToast('Saved to Affairs Feed!');
+  }
+
+  async function generateMore() {
+    if (!lastResult) return;
+    const output = document.getElementById('newsai-output');
+    if (!output) return;
+
+    const existingHTML = output.innerHTML;
+    const moreDiv = document.createElement('div');
+    moreDiv.id = 'newsai-more';
+    moreDiv.innerHTML = AI.loadingHTML('Generating 5 more MCQs...');
+    output.appendChild(moreDiv);
+
+    try {
+      const topic  = lastResult.syllabus_topics?.[0] || 'Current Affairs';
+      const subj   = lastResult.gs_paper?.includes('III') ? 'Economy' : 'Polity';
+      const qs     = await AI.generateMCQ(topic, subj, 5, 'medium');
+
+      moreDiv.innerHTML = `
+        <div class="sc-title" style="margin-top:20px">⚡ 5 Additional MCQs</div>
+        ${qs.map((q, i) => `
+          <div class="section-card" style="margin-top:10px">
+            <div class="qc-text">Q${i + 1}. ${q.q}</div>
+            <div class="qc-opts">
+              ${q.opts.map((o, j) =>
+                `<button class="q-opt" onclick="NEWSAI.answerExtra(this,${j},${q.ans},'${q.explain.replace(/'/g, "\\'")}')">${o}</button>`
+              ).join('')}
+            </div>
+            <div class="extra-feedback-${i}" style="display:none" class="question-feedback"></div>
+          </div>`).join('')}`;
+    } catch (err) {
+      moreDiv.innerHTML = AI.errorHTML('Failed: ' + err.message);
+    }
+  }
+
+  function answerExtra(btn, idx, ans, explain) {
+    const opts = btn.closest('.qc-opts').querySelectorAll('.q-opt');
+    opts.forEach((b, i) => {
+      b.disabled = true;
+      if (i === ans) b.classList.add('correct');
+      else if (i === idx && idx !== ans) b.classList.add('wrong');
+    });
+    const fb = btn.closest('.section-card').querySelector('[class^="extra-feedback"]');
+    if (fb) {
+      fb.style.display = 'block';
+      fb.className = 'question-feedback';
+      fb.innerHTML = `<div class="qf-label">${idx === ans ? '✅ Correct!' : '❌ Incorrect'}</div><p>${explain}</p>`;
+    }
+    if (idx === ans) addXP(XP_REWARDS.quiz_correct, 'News Extra MCQ');
+  }
+
+  return { render, loadSample, analyze, answerMCQ, addToAffairs, generateMore, answerExtra };
+})();
+
+
