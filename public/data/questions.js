@@ -444,3 +444,7 @@ const MOCK_CONFIGS = [
   {id:'speed_drill',label:'Speed Drill',icon:'⚡',questions:20,timeMin:10,negMarking:false,negValue:0,desc:'20 questions in 10 minutes — trains rapid recall under pressure'},
   {id:'weak_assault',label:'Weak Zone Assault',icon:'⚔️',questions:30,timeMin:35,negMarking:true,negValue:0.33,desc:'Exclusively attacks your bottom 5 performing nodes with negative marking'},
 ];
+
+// Merge expansion packs when loaded
+if (typeof QUESTION_BANK_2 !== 'undefined') QUESTION_BANK.push(...QUESTION_BANK_2);
+if (typeof QUESTION_BANK_3 !== 'undefined') QUESTION_BANK.push(...QUESTION_BANK_3);
