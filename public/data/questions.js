@@ -445,6 +445,7 @@ const MOCK_CONFIGS = [
   {id:'weak_assault',label:'Weak Zone Assault',icon:'⚔️',questions:30,timeMin:35,negMarking:true,negValue:0.33,desc:'Exclusively attacks your bottom 5 performing nodes with negative marking'},
 ];
 
-// Merge expansion packs when loaded
+// Auto-merge expansion packs
 if (typeof QUESTION_BANK_2 !== 'undefined') QUESTION_BANK.push(...QUESTION_BANK_2);
 if (typeof QUESTION_BANK_3 !== 'undefined') QUESTION_BANK.push(...QUESTION_BANK_3);
+if (typeof QUESTION_BANK_4 !== 'undefined') QUESTION_BANK.push(...QUESTION_BANK_4);
